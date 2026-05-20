@@ -1,0 +1,1851 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Attendance · DSE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #fafaf9;
+      --surface: #ffffff;
+      --surface-2: #f5f5f4;
+      --border: #e7e5e4;
+      --border-2: #d6d3d1;
+      --fg: #1c1917;
+      --fg-mute: #57534e;
+      --fg-dim: #a8a29e;
+      --accent: #4f46e5;
+      --accent-soft: #eef2ff;
+      --good: #16a34a;
+      --good-soft: #dcfce7;
+      --warn: #d97706;
+      --warn-soft: #fef3c7;
+      --bad: #dc2626;
+      --bad-soft: #fee2e2;
+      --series-1: #4f46e5;
+      --series-2: #0891b2;
+      --series-3: #db2777;
+      --series-4: #ca8a04;
+      --series-5: #16a34a;
+      --series-6: #ea580c;
+      --series-7: #7c3aed;
+      --series-8: #0d9488;
+      --sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+      --mono: 'IBM Plex Mono', ui-monospace, monospace;
+      --radius: 12px;
+      /* message text colours (light) */
+      --msg-good-text: #14532d;
+      --msg-warn-text: #78350f;
+      --msg-bad-text:  #7f1d1d;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0c0a09;
+      --surface: #1c1917;
+      --surface-2: #292524;
+      --border: #3c3835;
+      --border-2: #44403c;
+      --fg: #fafaf9;
+      --fg-mute: #a8a29e;
+      --fg-dim: #78716c;
+      --accent: #818cf8;
+      --accent-soft: #1e1b4b;
+      --good: #4ade80;
+      --good-soft: #052e16;
+      --warn: #fbbf24;
+      --warn-soft: #451a03;
+      --bad: #f87171;
+      --bad-soft: #450a0a;
+      --msg-good-text: #bbf7d0;
+      --msg-warn-text: #fde68a;
+      --msg-bad-text:  #fecaca;
+      /* series colours are brighter in dark mode for legibility */
+      --series-1: #818cf8;
+      --series-2: #22d3ee;
+      --series-3: #f472b6;
+      --series-4: #fbbf24;
+      --series-5: #4ade80;
+      --series-6: #fb923c;
+      --series-7: #a78bfa;
+      --series-8: #2dd4bf;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      min-height: 100vh;
+    }
+
+    button {
+      font: inherit;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    input {
+      font: inherit;
+      color: inherit;
+    }
+
+    a {
+      color: var(--accent);
+    }
+
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 24px 18px 64px;
+    }
+
+    @media (max-width: 480px) {
+      .wrap {
+        padding: 18px 14px 56px;
+      }
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 18px;
+    }
+
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      background: var(--fg);
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 700;
+      font-size: 13px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .brand-mark img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .brand-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .brand-sub {
+      font-size: 11.5px;
+      color: var(--fg-dim);
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      font-weight: 500;
+      margin-left: auto;
+    }
+
+    .theme-btn {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      font-size: 15px;
+      transition: background .15s, border-color .15s;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .theme-btn:hover {
+      background: var(--border);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 10px 4px 8px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 500;
+    }
+
+    .pill>i {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .pill.is-loading {
+      background: var(--warn-soft);
+      color: var(--warn);
+    }
+
+    .pill.is-loading>i {
+      background: var(--warn);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    .pill.is-ok {
+      background: var(--good-soft);
+      color: var(--good);
+    }
+
+    .pill.is-ok>i {
+      background: var(--good);
+    }
+
+    .pill.is-err {
+      background: var(--bad-soft);
+      color: var(--bad);
+    }
+
+    .pill.is-err>i {
+      background: var(--bad);
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: .35;
+      }
+    }
+
+    /* ───── login ───── */
+    .login-eyebrow {
+      font-size: 11px;
+      letter-spacing: .14em;
+      font-weight: 600;
+      color: var(--fg-dim);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .login-title {
+      font-size: 36px;
+      line-height: 1.05;
+      font-weight: 600;
+      letter-spacing: -.025em;
+      margin: 0 0 14px;
+    }
+
+    .login-sub {
+      font-size: 15px;
+      color: var(--fg-mute);
+      margin: 0 0 28px;
+      line-height: 1.55;
+      max-width: 52ch;
+    }
+
+    @media (max-width: 480px) {
+      .login-title {
+        font-size: 28px;
+      }
+
+      .login-sub {
+        font-size: 14px;
+        margin-bottom: 22px;
+      }
+    }
+
+    .subj-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .subj-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 8px 14px 8px 10px;
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 12.5px;
+      font-weight: 500;
+    }
+
+    .subj-chip-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .subj-chip-code {
+      color: var(--fg-dim);
+      font-family: var(--mono);
+      font-size: 10.5px;
+      letter-spacing: .04em;
+    }
+
+    .lookup {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-bottom: 14px;
+    }
+
+    .lookup-lbl {
+      font-size: 11px;
+      letter-spacing: .12em;
+      font-weight: 600;
+      color: var(--fg-dim);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .lookup-row {
+      display: flex;
+      gap: 8px;
+      position: relative;
+    }
+
+    .lookup-input {
+      flex: 1;
+      background: var(--surface-2);
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: 14px 16px;
+      font-size: 16px;
+      font-family: var(--mono);
+      outline: none;
+      min-width: 0;
+      transition: border-color .12s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .lookup-input:focus {
+      border-color: var(--accent);
+      background: var(--surface);
+    }
+
+    .lookup-btn {
+      background: var(--fg);
+      color: var(--bg);
+      border: 0;
+      border-radius: 9px;
+      padding: 0 22px;
+      font-size: 14px;
+      font-weight: 500;
+      min-height: 48px;
+      transition: background .15s;
+    }
+
+    .lookup-btn:hover {
+      background: var(--fg-mute);
+    }
+
+    .lookup-btn[disabled] {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    .lookup-err {
+      color: var(--bad);
+      font-size: 13px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 420px) {
+      .lookup-row {
+        flex-direction: column;
+      }
+
+      .lookup-btn {
+        width: 100%;
+        padding: 14px;
+      }
+    }
+
+    .suggest {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      box-shadow: 0 12px 30px -10px rgba(0, 0, 0, .15);
+      z-index: 10;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .suggest-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .suggest-item:last-child {
+      border-bottom: 0;
+    }
+
+    .suggest-item:hover,
+    .suggest-item.is-active {
+      background: var(--accent-soft);
+    }
+
+    .suggest-name {
+      font-size: 13.5px;
+      font-weight: 500;
+    }
+
+    .suggest-roll {
+      font-size: 11.5px;
+      font-family: var(--mono);
+      color: var(--fg-mute);
+    }
+
+    .login-hint {
+      font-size: 12.5px;
+      color: var(--fg-dim);
+      margin-top: 16px;
+      text-align: center;
+      line-height: 1.55;
+    }
+
+    .login-hint code {
+      background: var(--surface-2);
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-family: var(--mono);
+      font-size: 11.5px;
+    }
+
+    /* ───── dashboard ───── */
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .back-btn {
+      background: transparent;
+      border: 0;
+      color: var(--fg-mute);
+      font-size: 13px;
+      padding: 6px 10px 6px 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .back-btn:hover {
+      color: var(--fg);
+    }
+
+    .top-meta {
+      font-size: 11.5px;
+      color: var(--fg-dim);
+      font-family: var(--mono);
+    }
+
+    .top-meta button {
+      background: transparent;
+      border: 0;
+      color: var(--fg-mute);
+      text-decoration: underline;
+      padding: 0 0 0 8px;
+      font-size: 11.5px;
+      font-family: var(--mono);
+      cursor: pointer;
+    }
+
+    .top-meta button:hover {
+      color: var(--fg);
+    }
+
+    /* hero */
+    .hero {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 22px;
+      margin-bottom: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      background: var(--accent);
+    }
+
+    .hero.is-good::before {
+      background: var(--good);
+    }
+
+    .hero.is-warn::before {
+      background: var(--warn);
+    }
+
+    .hero.is-bad::before {
+      background: var(--bad);
+    }
+
+    .hero-name {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -.01em;
+    }
+
+    .hero-roll {
+      font-size: 11.5px;
+      color: var(--fg-dim);
+      font-family: var(--mono);
+      margin-top: 3px;
+    }
+
+    .hero-pct {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    .hero-pct-v {
+      font-size: 64px;
+      font-weight: 600;
+      letter-spacing: -.03em;
+      line-height: .95;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+    }
+
+    .hero-pct-v small {
+      font-size: 26px;
+      color: var(--fg-mute);
+      font-weight: 500;
+      margin-left: 1px;
+    }
+
+    .hero.is-good .hero-pct-v {
+      color: var(--good);
+    }
+
+    .hero.is-warn .hero-pct-v {
+      color: var(--warn);
+    }
+
+    .hero.is-bad .hero-pct-v {
+      color: var(--bad);
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .hero-badge.is-good {
+      background: var(--good-soft);
+      color: var(--good);
+    }
+
+    .hero-badge.is-warn {
+      background: var(--warn-soft);
+      color: var(--warn);
+    }
+
+    .hero-badge.is-bad {
+      background: var(--bad-soft);
+      color: var(--bad);
+    }
+
+    .hero-frac {
+      font-size: 14px;
+      color: var(--fg-mute);
+      margin-top: 12px;
+      font-family: var(--mono);
+    }
+
+    .hero-frac b {
+      color: var(--fg);
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .hero-bar {
+      margin-top: 22px;
+    }
+
+    .hero-bar-track {
+      background: var(--surface-2);
+      height: 10px;
+      border-radius: 999px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width .8s cubic-bezier(.2, .7, .2, 1);
+    }
+
+    .is-good .hero-bar-fill {
+      background: var(--good);
+    }
+
+    .is-warn .hero-bar-fill {
+      background: var(--warn);
+    }
+
+    .is-bad .hero-bar-fill {
+      background: var(--bad);
+    }
+
+    .hero-bar-threshold {
+      position: absolute;
+      top: -2px;
+      bottom: -2px;
+      width: 2px;
+      background: var(--fg);
+      opacity: .45;
+    }
+
+    .hero-bar-bottom {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10.5px;
+      color: var(--fg-dim);
+      margin-top: 6px;
+      font-family: var(--mono);
+    }
+
+    @media (max-width: 480px) {
+      .hero {
+        padding: 20px 18px;
+      }
+
+      .hero-pct-v {
+        font-size: 48px;
+      }
+
+      .hero-pct-v small {
+        font-size: 20px;
+      }
+    }
+
+    /* per-subject cards */
+    .subjects {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .subj-row {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      display: grid;
+      grid-template-columns: 14px 1fr auto;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .subj-row-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 4px;
+      align-self: center;
+    }
+
+    .subj-row-meta {
+      min-width: 0;
+    }
+
+    .subj-row-name {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -.005em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .subj-row-sub {
+      font-size: 11.5px;
+      color: var(--fg-mute);
+      font-family: var(--mono);
+      margin-top: 2px;
+    }
+
+    .subj-row-bar {
+      grid-column: 2 / 4;
+      margin-top: 8px;
+      height: 6px;
+      background: var(--surface-2);
+      border-radius: 999px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .subj-row-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width .6s cubic-bezier(.2, .7, .2, 1);
+    }
+
+    .subj-row-bar-fill.is-good {
+      background: var(--good);
+    }
+
+    .subj-row-bar-fill.is-warn {
+      background: var(--warn);
+    }
+
+    .subj-row-bar-fill.is-bad {
+      background: var(--bad);
+    }
+
+    .subj-row-bar-thr {
+      position: absolute;
+      top: -1px;
+      bottom: -1px;
+      width: 1.5px;
+      background: var(--fg);
+      opacity: .35;
+    }
+
+    .subj-row-pct {
+      font-family: var(--mono);
+      font-weight: 600;
+      font-size: 18px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .subj-row-pct small {
+      font-size: 12px;
+      color: var(--fg-mute);
+      font-weight: 500;
+      margin-left: 1px;
+    }
+
+    .subj-row-pct.is-good {
+      color: var(--good);
+    }
+
+    .subj-row-pct.is-warn {
+      color: var(--warn);
+    }
+
+    .subj-row-pct.is-bad {
+      color: var(--bad);
+    }
+
+    .subj-row-frac {
+      font-size: 11px;
+      color: var(--fg-dim);
+      text-align: right;
+      font-family: var(--mono);
+      margin-top: 3px;
+    }
+
+    /* card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 14px;
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 14px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--fg-mute);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .card-sub {
+      font-size: 11.5px;
+      color: var(--fg-dim);
+    }
+
+    /* trend chart */
+    .chart-wrap {
+      position: relative;
+    }
+
+    .chart-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--fg-mute);
+    }
+
+    .chart-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chart-legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+
+    .chart-legend-thr {
+      background: transparent;
+      border-top: 1.5px dashed var(--fg-mute);
+      height: 0;
+      width: 14px;
+    }
+
+    .chart-empty {
+      color: var(--fg-dim);
+      font-size: 13px;
+      text-align: center;
+      padding: 28px 0;
+    }
+
+    /* monthly bars (combined) */
+    .mb-grid {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 10px;
+      align-items: center;
+      row-gap: 8px;
+    }
+
+    .mb-month {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--fg-mute);
+      font-family: var(--mono);
+      letter-spacing: .04em;
+    }
+
+    .mb-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .mb-bar {
+      display: grid;
+      grid-template-columns: 1fr 60px 50px;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .mb-bar-track {
+      background: var(--surface-2);
+      height: 6px;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .mb-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+    }
+
+    .mb-bar-frac {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--fg-mute);
+      text-align: right;
+    }
+
+    .mb-bar-pct {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .mb-bar-pct.is-good {
+      color: var(--good);
+    }
+
+    .mb-bar-pct.is-warn {
+      color: var(--warn);
+    }
+
+    .mb-bar-pct.is-bad {
+      color: var(--bad);
+    }
+
+    /* compare row */
+    .stat-row {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stat-row:last-child {
+      border-bottom: 0;
+    }
+
+    .stat-row-l {
+      flex: 1;
+      font-size: 13px;
+      color: var(--fg-mute);
+    }
+
+    .stat-row-v {
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat-row-v small {
+      font-size: 11px;
+      color: var(--fg-mute);
+      font-weight: 500;
+      margin-left: 4px;
+    }
+
+    /* risk message */
+    .msg {
+      padding: 14px 16px;
+      border-radius: 9px;
+      font-size: 13.5px;
+      line-height: 1.55;
+      margin-bottom: 14px;
+    }
+
+    .msg b {
+      font-weight: 600;
+    }
+
+    .msg.is-good {
+      background: var(--good-soft);
+      color: var(--msg-good-text);
+    }
+
+    .msg.is-good b {
+      color: var(--good);
+    }
+
+    .msg.is-warn {
+      background: var(--warn-soft);
+      color: var(--msg-warn-text);
+    }
+
+    .msg.is-warn b {
+      color: var(--warn);
+    }
+
+    .msg.is-bad {
+      background: var(--bad-soft);
+      color: var(--msg-bad-text);
+    }
+
+    .msg.is-bad b {
+      color: var(--bad);
+    }
+
+    .err-card {
+      background: var(--surface);
+      border: 1px solid var(--bad-soft);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+    }
+
+    .err-card h2 {
+      margin: 0 0 6px;
+      font-size: 18px;
+    }
+
+    .err-card p {
+      color: var(--fg-mute);
+      font-size: 14px;
+      line-height: 1.55;
+      margin: 0 0 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="brand">
+      <div class="brand-mark"><img src="assets/mba-ba-logo.png" alt="MBA-BA"/></div>
+      <div class="brand-name">Attendance Dashboard</div>
+      <div class="brand-sub">DSE · MBA · Sem II</div>
+      <button class="theme-btn" id="theme-toggle" onclick="toggleTheme()" title="Toggle light / dark mode" aria-label="Toggle theme">🌙</button>
+    </div>
+    <div id="main"></div>
+  </div>
+
+  <script>
+    // ───────── theme ─────────
+    const LS_THEME = 'att.theme';
+    function applyTheme(dark) {
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+      const btn = document.getElementById('theme-toggle');
+      if (btn) btn.textContent = dark ? '☀️' : '🌙';
+    }
+    function toggleTheme() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const next = !isDark;
+      try { localStorage.setItem(LS_THEME, next ? 'dark' : 'light'); } catch { }
+      applyTheme(next);
+    }
+    // Init: respect saved preference, then system preference, default light
+    (function () {
+      const saved = localStorage.getItem(LS_THEME);
+      if (saved) { applyTheme(saved === 'dark'); return; }
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      applyTheme(prefersDark);
+    })();
+    window.toggleTheme = toggleTheme;
+
+    // ───────── config ─────────
+    // To add more subjects, append entries to this array.
+    // Each entry needs: id (unique key), code, short (tab label), name, prof, sheetId, tab (sheet tab name), color.
+    // The Google Sheet must be shared as "Anyone with the link → Viewer".
+    const SUBJECTS = [
+      {
+        id: 'dwdm',
+        code: 'MBABACC207',
+        short: 'DW & DM',
+        name: 'Data Warehousing and Data Mining',
+        prof: 'Dr. Anil Kumar Goswami',
+        sheetId: '1Ulxks8YGyyUFd56SU0FohfoPPFlYxDNw8zSd7cdsb64',
+        tab: 'All Months',
+        color: 'var(--series-1)',
+      },
+      {
+        id: 'ms',
+        code: 'MBABACC206',
+        short: 'Mgmt Sci',
+        name: 'Management Science',
+        prof: 'Dr. Manish Kumar',
+        sheetId: '1QzBcGK66MqYomLK6GDxYRcN8GslRtQATeYsObCngxdA',
+        tab: 'All Months',
+        color: 'var(--series-2)',
+      },
+      {
+        id: 'hr',
+        code: 'MBABACC202',
+        short: 'HR',
+        name: 'Human Resource Management',
+        prof: 'Dr. Svati Kumari',
+        sheetId: '1YXb6zWTn5Q-IMWajl8PctqrEBH-Ni4FAHKI6g9Ootho',
+        tab: 'All Months',
+        color: 'var(--series-3)',
+      },
+        {
+          id: 'cf',
+          code: 'MBABACC201',
+          short: 'CF',
+          name: 'Corporate Finance',
+          prof: 'Dr. Ritu Sapra',
+          sheetId: '10Lkz64NwtSYiOMQiW3RzFOif5JLqgbQ9o05dqVXD1dY',
+          tab: 'All Months',
+          color: 'var(--series-4)',
+        },
+      {
+        id: 'bdcc',
+        code: 'MBABACC203',
+        short: 'BDCC',
+        name: 'Big Data and Cloud Computing',
+        prof: 'Dr. R.K. Srivastava',
+        sheetId: '1N_vGOupfhOMFCMFSYsvqImi7C-UBPyLXpNs08RxJq3s',
+        tab: 'All Months',
+        color: 'var(--series-5)',
+      },
+      {
+        id: 'r',
+        code: 'MBABACC204',
+        short: 'R',
+        name: 'R Programming',
+        prof: 'Dr. Pratibha Maurya',
+        sheetId: '1G3tLRu_hER2J9BoJQD_BK8rY79oScuXPg4I1mNJ87is',
+        tab: 'All Months',
+        color: 'var(--series-6)',
+      },
+      {
+        id: 'ops',
+        code: 'MBABACC205',
+        short: 'OPS',
+        name: 'Operations Management',
+        prof: 'Dr. Kiran Bala',
+        sheetId: '1HqxqcAn5hFgnxUbCcJ-t61k4PNOwA8CsCRysP4xk9Z8',
+        tab: 'All Months',
+        color: 'var(--series-7)',
+      },
+
+    ];
+
+    const THRESHOLD = 75;
+    const MONTH_ORDER = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    // Google Visualization API endpoint — works for any sheet shared "Anyone with link · Viewer"
+    const gvizUrl = (s) =>
+      `https://docs.google.com/spreadsheets/d/${s.sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(s.tab)}`;
+
+    // ───────── caching (stale-while-revalidate) ─────────
+    const CACHE_VERSION = 'v2';
+    const CACHE_TTL_MS = 5 * 60 * 1000;
+    const LS_LAST_ROLL = 'att.lastRoll';
+    const LS_CACHE_PFX = 'att.cache.' + CACHE_VERSION + '.';
+
+    function loadCached(id) {
+      try {
+        const raw = localStorage.getItem(LS_CACHE_PFX + id);
+        if (!raw) return null;
+        const obj = JSON.parse(raw);
+        obj.fetchedAt = obj.fetchedAt ? new Date(obj.fetchedAt) : null;
+        return obj;
+      } catch { return null; }
+    }
+    function saveCached(id, payload) {
+      try {
+        localStorage.setItem(LS_CACHE_PFX + id, JSON.stringify({
+          ...payload,
+          fetchedAt: payload.fetchedAt ? payload.fetchedAt.toISOString() : null,
+        }));
+      } catch { }
+    }
+
+    // ───────── state ─────────
+    let STATE = {
+      subjects: Object.fromEntries(SUBJECTS.map(s => {
+        const cached = loadCached(s.id);
+        return [s.id, {
+          config: s,
+          loadStatus: cached ? 'ok' : 'idle',
+          error: null,
+          fetchedAt: cached ? cached.fetchedAt : null,
+          students: cached ? cached.students : [],
+          monthly: cached ? cached.monthly : [],
+          deliveredTotal: cached ? cached.deliveredTotal : 0,
+          classAvg: cached ? cached.classAvg : 0,
+        }];
+      })),
+      view: 'login',
+      studentRoll: localStorage.getItem(LS_LAST_ROLL) || null,
+      query: '',
+      activeSuggest: -1,
+      error_login: null,
+    };
+    if (STATE.studentRoll) STATE.view = 'dashboard';
+
+    // ───────── fetch + parse ─────────
+    function cellVal(c) { return c ? c.v : null; }
+
+    async function fetchSubject(id) {
+      const subj = STATE.subjects[id];
+      if (!subj) return;
+      const hadData = subj.loadStatus === 'ok' && subj.students.length > 0;
+      if (!hadData) {
+        subj.loadStatus = 'loading';
+        subj.error = null;
+        render();
+      }
+      try {
+        const res = await fetch(gvizUrl(subj.config), { credentials: 'omit', cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+        const m = text.match(/setResponse\((.*)\);?\s*$/s);
+        if (!m) {
+          if (/sign in|accounts\.google/i.test(text))
+            throw new Error('Sheet not shared as "Anyone with link · Viewer"');
+          throw new Error('Unexpected response from Sheets');
+        }
+        const json = JSON.parse(m[1]);
+        if (json.status !== 'ok') throw new Error('Sheet error: ' + json.status);
+        const parsed = parseAllMonths(json.table);
+        subj.students = parsed.students;
+        subj.monthly = parsed.monthly;
+        subj.deliveredTotal = parsed.deliveredTotal;
+        subj.classAvg = parsed.classAvg;
+        subj.fetchedAt = new Date();
+        subj.loadStatus = 'ok';
+        saveCached(id, {
+          students: parsed.students, monthly: parsed.monthly,
+          deliveredTotal: parsed.deliveredTotal, classAvg: parsed.classAvg,
+          fetchedAt: subj.fetchedAt,
+        });
+      } catch (err) {
+        if (hadData) subj.error = err.message;
+        else { subj.error = err.message; subj.loadStatus = 'err'; }
+      }
+      render();
+    }
+
+    // Sheet schema for "All Months" tab:
+    //   Row 0: [blank, blank, Jan_delivered, Feb_delivered, Mar_delivered, Apr_delivered, May_delivered, blank, Total_delivered]
+    //   Row 1: header row (skipped)
+    //   Row 2+: [Roll No., Student Name, Jan_present, Feb_present, Mar_present, Apr_present, May_present, blank, Total_present, Total_%, AT(10)]
+    function parseAllMonths(table) {
+      const rows = table.rows || [];
+      if (rows.length < 3) throw new Error('Sheet has too few rows');
+      const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May'];
+      const dRow = rows[0].c || [];
+      const delivered = {};
+      for (let j = 0; j < MONTHS.length; j++) {
+        const v = cellVal(dRow[2 + j]);
+        delivered[MONTHS[j]] = (typeof v === 'number' && isFinite(v)) ? v : 0;
+      }
+      const deliveredTotal = typeof cellVal(dRow[7]) === 'number'
+        ? cellVal(dRow[7])
+        : MONTHS.reduce((a, m) => a + delivered[m], 0);
+
+      const students = [];
+      for (let i = 2; i < rows.length; i++) {
+        const r = rows[i].c || [];
+        const roll = cellVal(r[0]);
+        const name = cellVal(r[1]);
+        if (typeof roll !== 'string' || !roll.trim()) continue;
+        if (typeof name !== 'string' || !name.trim()) continue;
+
+        const byMonth = MONTHS.map((m, j) => {
+          const p = parseFloat(cellVal(r[2 + j]));
+          const t = delivered[m] || 0;
+          const safe = isFinite(p) ? p : 0;
+          return { month: m, present: safe, total: t, pct: t ? (safe / t) * 100 : 0 };
+        });
+
+        const sheetTotalPresent = parseFloat(cellVal(r[7]));
+        const sheetPct = parseFloat(cellVal(r[8]));
+        const sheetMarks = parseFloat(cellVal(r[9]));
+
+        const present = isFinite(sheetTotalPresent) ? sheetTotalPresent : byMonth.reduce((a, m) => a + m.present, 0);
+        const total = deliveredTotal;
+        // Trust the sheet's own Total % column; clamp to [0, 100] for display only
+        const rawPct = isFinite(sheetPct) ? sheetPct : (total ? (present / total) * 100 : 0);
+
+        students.push({
+          roll: roll.trim(), name: name.trim(),
+          present, total,
+          pct: Math.min(100, Math.max(0, rawPct)),
+          marks: isFinite(sheetMarks) ? sheetMarks : null,
+          byMonth,
+        });
+      }
+
+      const monthly = MONTHS.filter(m => delivered[m] > 0).map(m => ({ month: m, delivered: delivered[m] }));
+      const classAvg = students.length ? students.reduce((a, s) => a + s.pct, 0) / students.length : 0;
+      return { students, monthly, deliveredTotal, classAvg };
+    }
+
+    // ───────── helpers ─────────
+    function classify(pct) {
+      if (pct >= 85) return 'good';
+      if (pct >= THRESHOLD) return 'warn';
+      return 'bad';
+    }
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function fmtAgo(t) {
+      if (!t) return '—';
+      const s = Math.round((Date.now() - t.getTime()) / 1000);
+      if (s < 5) return 'just now';
+      if (s < 60) return s + 's ago';
+      if (s < 3600) return Math.round(s / 60) + 'm ago';
+      return Math.round(s / 3600) + 'h ago';
+    }
+    function statusLabel(cls) {
+      return cls === 'good' ? 'On track' : cls === 'warn' ? 'Watch list' : 'Below threshold';
+    }
+
+    // Merge both subjects' rosters; deduplicate by roll number
+    function allStudentsIndex() {
+      const map = new Map();
+      for (const s of SUBJECTS) {
+        for (const stu of STATE.subjects[s.id].students) {
+          if (!map.has(stu.roll)) map.set(stu.roll, { roll: stu.roll, name: stu.name });
+        }
+      }
+      return [...map.values()];
+    }
+
+    function findStudent(q) {
+      const Q = q.trim().toLowerCase();
+      if (!Q) return null;
+      const all = allStudentsIndex();
+      const exact = all.find(s => s.roll.toLowerCase() === Q);
+      if (exact) return exact;
+      const suffix = all.filter(s => s.roll.toLowerCase().endsWith(Q));
+      if (suffix.length === 1) return suffix[0];
+      const byName = all.filter(s => s.name.toLowerCase().includes(Q));
+      if (byName.length === 1) return byName[0];
+      return null;
+    }
+
+    function suggestionsFor(q) {
+      const Q = q.trim().toLowerCase();
+      if (!Q) return [];
+      return allStudentsIndex()
+        .filter(s => s.roll.toLowerCase().includes(Q) || s.name.toLowerCase().includes(Q))
+        .slice(0, 6);
+    }
+
+    // Returns per-subject records for this roll (null when not enrolled / not yet loaded)
+    function studentAcrossSubjects(roll) {
+      return SUBJECTS.map(cfg => {
+        const subj = STATE.subjects[cfg.id];
+        const rec = subj.students.find(s => s.roll === roll) || null;
+        return { config: cfg, subj, record: rec, loadStatus: subj.loadStatus };
+      });
+    }
+
+    function combinedSummary(across) {
+      let present = 0, total = 0;
+      for (const r of across) {
+        if (r.record) { present += r.record.present; total += r.record.total; }
+      }
+      return { present, total, pct: total ? (present / total) * 100 : 0 };
+    }
+
+    function projectionMsg(present, total) {
+      const pct = total ? (present / total) * 100 : 0;
+      const cls = classify(pct);
+      if (cls === 'good') {
+        const x = Math.floor(present / 0.75 - total);
+        return { cls: 'good', html: `Combined attendance is <b>${pct.toFixed(1)}%</b>. Across all subjects, you can miss up to <b>${Math.max(0, x)}</b> more lecture${x === 1 ? '' : 's'} and stay above ${THRESHOLD}%.` };
+      }
+      if (cls === 'warn') {
+        const x = Math.floor(present / 0.75 - total);
+        return { cls: 'warn', html: `Combined attendance is <b>${pct.toFixed(1)}%</b> — just above the line. Margin: <b>${Math.max(0, x)}</b> lecture${x === 1 ? '' : 's'} across all subjects.` };
+      }
+      const x = Math.ceil((0.75 * total - present) / 0.25);
+      return { cls: 'bad', html: `Combined attendance is <b>${pct.toFixed(1)}%</b> — <b>below</b> the ${THRESHOLD}% line. You'd need to attend the next <b>${Math.max(1, x)}</b> lectures in a row to clear it.` };
+    }
+
+    // ───────── SVG trend chart ─────────
+    function renderTrend(across) {
+      const monthSet = new Set();
+      for (const r of across) for (const m of (r.subj.monthly || [])) monthSet.add(m.month);
+      const months = [...monthSet].sort((a, b) => MONTH_ORDER.indexOf(a) - MONTH_ORDER.indexOf(b));
+      if (!months.length) return '<div class="chart-empty">No monthly data yet.</div>';
+
+      const W = 680, H = 220;
+      const PAD = { l: 36, r: 18, t: 18, b: 32 };
+      const w = W - PAD.l - PAD.r;
+      const h = H - PAD.t - PAD.b;
+      const cx = (i) => PAD.l + (months.length === 1 ? w / 2 : (i / (months.length - 1)) * w);
+      const cy = (pct) => PAD.t + (1 - pct / 100) * h;
+
+      const seriesSvg = across.filter(r => r.record).map(r => {
+        const pts = months.map((m, i) => {
+          const mm = r.record.byMonth.find(x => x.month === m);
+          if (!mm || mm.total === 0) return null;
+          return { i, m, pct: mm.pct, present: mm.present, total: mm.total };
+        });
+        const valid = pts.filter(Boolean);
+        if (!valid.length) return '';
+        const d = valid.map((p, idx) => (idx === 0 ? 'M' : 'L') + cx(p.i) + ',' + cy(p.pct)).join(' ');
+        const dots = valid.map(p =>
+          `<circle cx="${cx(p.i)}" cy="${cy(p.pct)}" r="4" fill="${r.config.color}" stroke="var(--surface)" stroke-width="2">` +
+          `<title>${r.config.short} · ${p.m} · ${p.pct.toFixed(0)}% (${p.present}/${p.total})</title></circle>`
+        ).join('');
+        return `<path d="${d}" fill="none" stroke="${r.config.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${dots}`;
+      }).join('');
+
+      const yTicks = [0, 25, 50, 75, 100];
+      const grid = yTicks.map(t => `
+    <line x1="${PAD.l}" y1="${cy(t)}" x2="${W - PAD.r}" y2="${cy(t)}"
+      stroke="var(--border)" stroke-width="${t === 0 ? 1 : 0.5}"
+      ${t === THRESHOLD ? 'stroke-dasharray="3 3" stroke="var(--fg-mute)" stroke-width="1"' : ''}/>
+    <text x="${PAD.l - 8}" y="${cy(t) + 3}" text-anchor="end" font-size="10"
+      fill="var(--fg-dim)" font-family="var(--mono)">${t}</text>
+  `).join('');
+
+      const xLabels = months.map((m, i) =>
+        `<text x="${cx(i)}" y="${H - 10}" text-anchor="middle" font-size="11"
+      fill="var(--fg-mute)" font-family="var(--mono)" font-weight="500">${m}</text>`
+      ).join('');
+
+      const thrLabel = `<text x="${W - PAD.r - 4}" y="${cy(THRESHOLD) - 4}" text-anchor="end"
+    font-size="10" fill="var(--fg-mute)" font-family="var(--mono)">${THRESHOLD}% threshold</text>`;
+
+      return `<svg class="chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet"
+    role="img" aria-label="Attendance trend by month, per subject">
+    ${grid}${seriesSvg}${xLabels}${thrLabel}
+  </svg>`;
+    }
+
+    // ───────── render ─────────
+    function render() {
+      const main = document.getElementById('main');
+      if (STATE.view === 'dashboard' && STATE.studentRoll) {
+        main.innerHTML = renderDashboard(STATE.studentRoll);
+      } else {
+        main.innerHTML = renderLogin();
+        wireLogin();
+      }
+    }
+
+    function renderLogin() {
+      const totalLectures = SUBJECTS.reduce((a, s) => a + (STATE.subjects[s.id].deliveredTotal || 0), 0);
+      return `
+    <h1 class="login-title">Check your attendance</h1>
+    <p class="login-sub">One screen, all subjects. Enter your roll number to see overall and per-subject standing, monthly trends, and what it takes to stay above <b>${THRESHOLD}%</b>.</p>
+
+    <div class="subj-strip">
+      ${SUBJECTS.map(s => {
+        const data = STATE.subjects[s.id];
+        const cls = data.loadStatus === 'loading' ? 'is-loading' : data.loadStatus === 'err' ? 'is-err' : 'is-ok';
+        const label = data.loadStatus === 'loading' ? 'Loading…' : data.loadStatus === 'err' ? 'Failed' : `${data.students.length} students`;
+        return `<span class="subj-chip">
+          <span class="subj-chip-dot" style="background:${s.color};"></span>
+          ${escapeHtml(s.short)}
+          <span class="subj-chip-code">${escapeHtml(s.code)}</span>
+          <span class="pill ${cls}" style="padding:1px 7px;font-size:10.5px;"><i></i>${label}</span>
+        </span>`;
+      }).join('')}
+    </div>
+
+    <div class="lookup">
+      <label class="lookup-lbl" for="roll-input">Your roll number</label>
+      <div class="lookup-row">
+        <input id="roll-input" class="lookup-input" autocomplete="off" spellcheck="false"
+               placeholder="e.g. 25COMM1141 or just 1141"
+               value="${escapeHtml(STATE.query)}"/>
+        <button class="lookup-btn" id="lookup-go" ${STATE.query.trim() ? '' : 'disabled'}>View →</button>
+      </div>
+      ${STATE.error_login ? `<div class="lookup-err">${escapeHtml(STATE.error_login)}</div>` : ''}
+    </div>
+
+    <div class="login-hint">
+      Type your full roll like <code>25COMM1141</code>, or just the digits like <code>1141</code>, or part of your name.<br>
+      Loaded data across <b>${SUBJECTS.length}</b> subjects · <b>${totalLectures}</b> lectures held in total.
+    </div>`;
+    }
+
+    function wireLogin() {
+      const input = document.getElementById('roll-input');
+      if (!input) return;
+      input.focus();
+      try { input.setSelectionRange(input.value.length, input.value.length); } catch (_) { }
+
+      input.addEventListener('input', e => {
+        STATE.query = e.target.value;
+        STATE.activeSuggest = -1;
+        STATE.error_login = null;
+        updateLookupChrome();
+      });
+      input.addEventListener('keydown', e => {
+        const sug = suggestionsFor(STATE.query);
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          STATE.activeSuggest = Math.min(sug.length - 1, STATE.activeSuggest + 1);
+          updateLookupChrome();
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          STATE.activeSuggest = Math.max(-1, STATE.activeSuggest - 1);
+          updateLookupChrome();
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          if (STATE.activeSuggest >= 0 && sug[STATE.activeSuggest])
+            openStudent(sug[STATE.activeSuggest].roll);
+          else
+            attemptLookup();
+        } else if (e.key === 'Escape') {
+          STATE.activeSuggest = -1;
+          updateLookupChrome();
+        }
+      });
+      document.getElementById('lookup-go')?.addEventListener('click', attemptLookup);
+    }
+
+    // Only updates the suggestions dropdown and button state — never rebuilds the input,
+    // which would reset cursor position while the user is typing.
+    function updateLookupChrome() {
+      const row = document.querySelector('.lookup-row');
+      if (!row) return;
+
+      const btn = document.getElementById('lookup-go');
+      if (btn) {
+        if (STATE.query.trim()) btn.removeAttribute('disabled');
+        else btn.setAttribute('disabled', 'disabled');
+      }
+
+      const existing = document.getElementById('suggest');
+      if (existing) existing.remove();
+
+      const suggestions = suggestionsFor(STATE.query);
+      if (suggestions.length) {
+        const div = document.createElement('div');
+        div.className = 'suggest';
+        div.id = 'suggest';
+        div.innerHTML = suggestions.map((s, i) => `
+      <div class="suggest-item ${i === STATE.activeSuggest ? 'is-active' : ''}" data-roll="${escapeHtml(s.roll)}">
+        <span class="suggest-name">${escapeHtml(s.name)}</span>
+        <span class="suggest-roll">${escapeHtml(s.roll)}</span>
+      </div>`).join('');
+        row.appendChild(div);
+        div.querySelectorAll('.suggest-item').forEach(el => {
+          el.addEventListener('mousedown', e => {
+            e.preventDefault();
+            openStudent(el.getAttribute('data-roll'));
+          });
+        });
+      }
+
+      const errEl = document.querySelector('.lookup-err');
+      if (errEl) errEl.remove();
+      if (STATE.error_login) {
+        const card = document.querySelector('.lookup');
+        if (card) {
+          const e = document.createElement('div');
+          e.className = 'lookup-err';
+          e.textContent = STATE.error_login;
+          card.appendChild(e);
+        }
+      }
+    }
+
+    function attemptLookup() {
+      const s = findStudent(STATE.query);
+      if (s) {
+        openStudent(s.roll);
+      } else {
+        STATE.error_login = `No match for "${STATE.query.trim()}". Try a full roll like 25COMM1141 or pick from the suggestions.`;
+        updateLookupChrome();
+      }
+    }
+
+    function openStudent(roll) {
+      STATE.studentRoll = roll;
+      STATE.view = 'dashboard';
+      STATE.error_login = null;
+      STATE.activeSuggest = -1;
+      try { localStorage.setItem(LS_LAST_ROLL, roll); } catch { }
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      render();
+    }
+
+    function renderDashboard(roll) {
+      const across = studentAcrossSubjects(roll);
+      const anyRecord = across.find(r => r.record);
+
+      if (!anyRecord) {
+        const stillLoading = across.some(r => r.loadStatus === 'loading' || r.loadStatus === 'idle');
+        if (stillLoading) {
+          return `${topRowHtml(null)}
+        <div class="card" style="text-align:center;padding:36px 22px;">
+          <span class="pill is-loading"><i></i>Loading attendance for ${escapeHtml(roll)}…</span>
+        </div>`;
+        }
+        return `${topRowHtml(null)}
+      <div class="err-card">
+        <h2>No record for ${escapeHtml(roll)}</h2>
+        <p>This roll number isn't on the roster for any tracked subject. Double-check it, or go back and try again.</p>
+      </div>`;
+      }
+
+      const name = anyRecord.record.name;
+      const combined = combinedSummary(across);
+      const cls = classify(combined.pct);
+      const msg = projectionMsg(combined.present, combined.total);
+      const latestFetch = across.reduce((acc, r) =>
+        r.subj.fetchedAt && (!acc || r.subj.fetchedAt > acc) ? r.subj.fetchedAt : acc, null);
+      const lowSubjects = across.filter(r => r.record && r.record.pct < THRESHOLD);
+
+      const sortedCombined = computeOverallRanks(SUBJECTS, STATE.subjects).find(x => x.roll === roll);
+      const classRank = sortedCombined ? sortedCombined.rank : null;
+      const classTotal = sortedCombined ? sortedCombined.total : null;
+      const classAvgCombined = computeClassAvgCombined(SUBJECTS, STATE.subjects);
+      const enrolledCount = across.filter(r => r.record).length;
+
+      return `
+    ${topRowHtml(latestFetch)}
+
+    <div class="hero is-${cls}">
+      <div class="hero-name">${escapeHtml(name)}</div>
+      <div class="hero-roll">${escapeHtml(roll)} · Across ${enrolledCount} subject${enrolledCount === 1 ? '' : 's'}</div>
+      <div class="hero-pct">
+        <span class="hero-pct-v">${combined.pct.toFixed(1)}<small>%</small></span>
+        <span class="hero-badge is-${cls}">${statusLabel(cls)}</span>
+      </div>
+      <div class="hero-frac"><b>${combined.present}</b> attended of <b>${combined.total}</b> total lectures</div>
+      <div class="hero-bar">
+        <div class="hero-bar-track">
+          <div class="hero-bar-fill" style="width:${Math.min(100, combined.pct)}%;"></div>
+          <div class="hero-bar-threshold" style="left:${THRESHOLD}%;"></div>
+        </div>
+        <div class="hero-bar-bottom">
+          <span>0%</span><span>${THRESHOLD}% threshold</span><span>100%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="msg is-${msg.cls}">${msg.html}</div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3 class="card-title">Per subject</h3>
+        <span class="card-sub">${enrolledCount} enrolled</span>
+      </div>
+      <div class="subjects">
+        ${across.map(r => renderSubjRow(r)).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3 class="card-title">Trend over months</h3>
+        <span class="card-sub">Per-subject % by month</span>
+      </div>
+      <div class="chart-wrap">${renderTrend(across)}</div>
+      <div class="chart-legend">
+        ${SUBJECTS.map(s =>
+        `<span class="chart-legend-item">
+            <span class="chart-legend-dot" style="background:${s.color};"></span>${escapeHtml(s.short)}
+          </span>`).join('')}
+        <span class="chart-legend-item">
+          <span class="chart-legend-thr"></span>${THRESHOLD}% threshold
+        </span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3 class="card-title">Monthly comparison</h3>
+        <span class="card-sub">Side-by-side per month</span>
+      </div>
+      ${renderMonthlyBars(across)}
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3 class="card-title">Compared to your class</h3></div>
+      <div class="stat-row">
+        <span class="stat-row-l">Your combined attendance</span>
+        <span class="stat-row-v" style="color:var(--${cls});">${combined.pct.toFixed(1)}%</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-row-l">Class combined average</span>
+        <span class="stat-row-v">${classAvgCombined.toFixed(1)}%</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-row-l">Difference</span>
+        <span class="stat-row-v" style="color:${combined.pct >= classAvgCombined ? 'var(--good)' : 'var(--bad)'};">
+          ${combined.pct >= classAvgCombined ? '+' : ''}${(combined.pct - classAvgCombined).toFixed(1)} pts
+        </span>
+      </div>
+      ${classRank ? `<div class="stat-row">
+        <span class="stat-row-l">Combined rank</span>
+        <span class="stat-row-v">#${classRank} <small>of ${classTotal}</small></span>
+      </div>` : ''}
+      ${across.filter(r => r.record && r.record.marks !== null).map(r => `
+        <div class="stat-row">
+          <span class="stat-row-l">${escapeHtml(r.config.short)} · attendance marks</span>
+          <span class="stat-row-v">${r.record.marks}<small>/ 10</small></span>
+        </div>`).join('')}
+    </div>
+
+    ${lowSubjects.length ? `
+      <div class="msg is-bad">
+        <b>⚠ Below threshold in ${lowSubjects.length} subject${lowSubjects.length === 1 ? '' : 's'}:</b>
+        ${lowSubjects.map(r => `<b>${escapeHtml(r.config.short)}</b> (${r.record.pct.toFixed(0)}%)`).join(', ')}.
+      </div>` : ''}
+  `;
+    }
+
+    function topRowHtml(latestFetch) {
+      return `<div class="top-row">
+    <button class="back-btn" onclick="goLogin()">← Back</button>
+    <span class="top-meta">Updated ${fmtAgo(latestFetch)}<button onclick="refreshAll()">Refresh</button></span>
+  </div>`;
+    }
+
+    function renderSubjRow(r) {
+      if (!r.record) {
+        if (r.loadStatus === 'loading' || r.loadStatus === 'idle') {
+          return `<div class="subj-row">
+        <span class="subj-row-color" style="background:${r.config.color};"></span>
+        <div class="subj-row-meta">
+          <div class="subj-row-name">${escapeHtml(r.config.short)}</div>
+          <div class="subj-row-sub">${escapeHtml(r.config.code)} · loading…</div>
+        </div>
+        <div></div>
+      </div>`;
+        }
+        if (r.loadStatus === 'err') {
+          return `<div class="subj-row">
+        <span class="subj-row-color" style="background:var(--bad);"></span>
+        <div class="subj-row-meta">
+          <div class="subj-row-name">${escapeHtml(r.config.short)}</div>
+          <div class="subj-row-sub" style="color:var(--bad);">${escapeHtml(r.subj.error || 'load failed')}</div>
+        </div>
+        <button class="back-btn" onclick="fetchSubject('${r.config.id}')"
+          style="font-size:11px;text-decoration:underline;">retry</button>
+      </div>`;
+        }
+        return `<div class="subj-row">
+      <span class="subj-row-color" style="background:var(--border-2);"></span>
+      <div class="subj-row-meta">
+        <div class="subj-row-name">${escapeHtml(r.config.short)}</div>
+        <div class="subj-row-sub">${escapeHtml(r.config.code)} · not enrolled</div>
+      </div>
+      <div></div>
+    </div>`;
+      }
+
+      const rec = r.record;
+      const cls = classify(rec.pct);
+      return `<div class="subj-row">
+    <span class="subj-row-color" style="background:${r.config.color};"></span>
+    <div class="subj-row-meta">
+      <div class="subj-row-name">${escapeHtml(r.config.short)}</div>
+      <div class="subj-row-sub">${escapeHtml(r.config.code)} · ${escapeHtml(r.config.prof)}</div>
+    </div>
+    <div>
+      <div class="subj-row-pct is-${cls}">${rec.pct.toFixed(1)}<small>%</small></div>
+      <div class="subj-row-frac">${rec.present}/${rec.total}</div>
+    </div>
+    <div class="subj-row-bar">
+      <div class="subj-row-bar-fill is-${cls}" style="width:${Math.min(100, rec.pct)}%;"></div>
+      <div class="subj-row-bar-thr" style="left:${THRESHOLD}%;"></div>
+    </div>
+  </div>`;
+    }
+
+    function renderMonthlyBars(across) {
+      const monthSet = new Set();
+      for (const r of across) for (const m of (r.subj.monthly || [])) monthSet.add(m.month);
+      const months = [...monthSet].sort((a, b) => MONTH_ORDER.indexOf(a) - MONTH_ORDER.indexOf(b));
+      if (!months.length) return '<div class="chart-empty">No monthly data yet.</div>';
+
+      return months.map(m => `
+    <div class="mb-grid" style="margin-bottom:14px;">
+      <div class="mb-month">${m}</div>
+      <div class="mb-bars">
+        ${across.filter(r => r.record).map(r => {
+        const mm = r.record.byMonth.find(x => x.month === m);
+        if (!mm || mm.total === 0)
+          return `<div class="mb-bar"><div class="mb-bar-track"></div><div class="mb-bar-frac">—</div><div class="mb-bar-pct" style="color:var(--fg-dim);">—</div></div>`;
+        const cls = classify(mm.pct);
+        return `<div class="mb-bar">
+            <div class="mb-bar-track">
+              <div class="mb-bar-fill" style="width:${Math.min(100, mm.pct)}%;background:${r.config.color};"></div>
+            </div>
+            <div class="mb-bar-frac">${mm.present}/${mm.total}</div>
+            <div class="mb-bar-pct is-${cls}">${mm.pct.toFixed(0)}%</div>
+          </div>`;
+      }).join('')}
+      </div>
+    </div>`).join('');
+    }
+
+    // ───────── class ranking ─────────
+    function computeOverallRanks(subjects, subjectStates) {
+      const byRoll = new Map();
+      for (const cfg of subjects) {
+        for (const s of subjectStates[cfg.id].students) {
+          if (!byRoll.has(s.roll)) byRoll.set(s.roll, { roll: s.roll, present: 0, total: 0 });
+          const acc = byRoll.get(s.roll);
+          acc.present += s.present;
+          acc.total += s.total;
+        }
+      }
+      const list = [...byRoll.values()].map(x => ({ ...x, pct: x.total ? x.present / x.total * 100 : 0 }));
+      list.sort((a, b) => b.pct - a.pct || a.roll.localeCompare(b.roll));
+      return list.map((x, i) => ({ ...x, rank: i + 1, total: list.length }));
+    }
+    function computeClassAvgCombined(subjects, subjectStates) {
+      const ranks = computeOverallRanks(subjects, subjectStates);
+      if (!ranks.length) return 0;
+      return ranks.reduce((a, r) => a + r.pct, 0) / ranks.length;
+    }
+
+    // ───────── global handlers (called from inline onclick) ─────────
+    window.goLogin = function () {
+      STATE.view = 'login';
+      STATE.studentRoll = null;
+      STATE.query = '';
+      try { localStorage.removeItem(LS_LAST_ROLL); } catch { }
+      render();
+    };
+    window.refreshAll = function () { for (const s of SUBJECTS) fetchSubject(s.id); };
+    window.fetchSubject = fetchSubject;
+
+    // Boot: render from cache immediately, then refresh stale subjects in background
+    render();
+    for (const s of SUBJECTS) {
+      const subj = STATE.subjects[s.id];
+      const stale = subj.fetchedAt && (Date.now() - subj.fetchedAt.getTime() > CACHE_TTL_MS);
+      if (subj.loadStatus === 'idle' || stale) fetchSubject(s.id);
+    }
+  </script>
+</body>
+
+</html>
