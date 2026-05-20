@@ -1035,6 +1035,158 @@
       line-height: 1.55;
       margin: 0 0 14px;
     }
+
+    /* ───── heat matrix ───── */
+    .hm-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 0 -2px;
+    }
+
+    .hm-table {
+      border-collapse: separate;
+      border-spacing: 4px;
+      width: 100%;
+    }
+
+    .hm-th {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--fg-mute);
+      font-family: var(--mono);
+      letter-spacing: .06em;
+      text-align: center;
+      padding: 0 0 6px;
+      white-space: nowrap;
+    }
+
+    .hm-th-label {
+      text-align: left;
+      min-width: 64px;
+    }
+
+    .hm-th-total {
+      border-left: 2px solid var(--border);
+      padding-left: 8px;
+      color: var(--fg);
+    }
+
+    .hm-row-label {
+      text-align: left;
+      padding-right: 10px;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    .hm-subject {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .hm-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    .hm-cell {
+      border-radius: 7px;
+      text-align: center;
+      padding: 8px 6px;
+      min-width: 52px;
+      vertical-align: middle;
+      transition: opacity .12s;
+      cursor: default;
+    }
+
+    .hm-cell:hover {
+      opacity: .8;
+    }
+
+    .hm-pct {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+
+    .hm-frac {
+      font-family: var(--mono);
+      font-size: 9.5px;
+      opacity: .65;
+      margin-top: 2px;
+    }
+
+    .hm-cell-empty {
+      background: var(--surface-2);
+      color: var(--fg-dim);
+    }
+
+    .hm-cell-good {
+      background: var(--good-soft);
+      color: var(--good);
+    }
+
+    .hm-cell-warn {
+      background: var(--warn-soft);
+      color: var(--warn);
+    }
+
+    .hm-cell-bad {
+      background: var(--bad-soft);
+      color: var(--bad);
+    }
+
+    .hm-total-cell {
+      border-left: 2px solid var(--border);
+    }
+
+    .hm-legend {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .hm-legend-item {
+      font-size: 11px;
+      font-family: var(--mono);
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 5px;
+    }
+
+    /* ───── view toggle (matrix / bars) ───── */
+    .view-toggle {
+      display: flex;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .vt-btn {
+      border: 0;
+      background: transparent;
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--fg-mute);
+      transition: background .12s, color .12s;
+    }
+
+    .vt-btn.is-active {
+      background: var(--surface);
+      color: var(--fg);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
+    }
   </style>
 </head>
 
@@ -1201,6 +1353,7 @@
       query: '',
       activeSuggest: -1,
       error_login: null,
+      chartView: 'matrix',
     };
     if (STATE.studentRoll) STATE.view = 'dashboard';
 
@@ -1680,9 +1833,14 @@
     <div class="card">
       <div class="card-head">
         <h3 class="card-title">Monthly comparison</h3>
-        <span class="card-sub">Side-by-side per month</span>
+        <div class="view-toggle">
+          <button class="vt-btn ${STATE.chartView === 'matrix' ? 'is-active' : ''}"
+            onclick="setChartView('matrix')">Matrix</button>
+          <button class="vt-btn ${STATE.chartView === 'bars' ? 'is-active' : ''}"
+            onclick="setChartView('bars')">Bars</button>
+        </div>
       </div>
-      ${renderMonthlyBars(across)}
+      ${STATE.chartView === 'matrix' ? renderHeatMatrix(across) : renderMonthlyBars(across)}
     </div>
 
     <div class="card">
@@ -1806,6 +1964,96 @@
     </div>`).join('');
     }
 
+    function renderHeatMatrix(across) {
+      const monthSet = new Set();
+      for (const r of across) for (const m of (r.subj.monthly || [])) monthSet.add(m.month);
+      const months = [...monthSet].sort((a, b) => MONTH_ORDER.indexOf(a) - MONTH_ORDER.indexOf(b));
+      const enrolled = across.filter(r => r.record);
+      if (!months.length || !enrolled.length) return '<div class="chart-empty">No monthly data yet.</div>';
+
+      function dataCell(pct, present, total) {
+        const cls = classify(pct);
+        return `<td class="hm-cell hm-cell-${cls}" title="${present}/${total} · ${pct.toFixed(1)}%">
+          <div class="hm-pct">${pct.toFixed(0)}%</div>
+          <div class="hm-frac">${present}/${total}</div>
+        </td>`;
+      }
+
+      const header = `<tr>
+        <th class="hm-th hm-th-label"></th>
+        ${months.map(m => `<th class="hm-th">${m}</th>`).join('')}
+        <th class="hm-th hm-th-total">All</th>
+      </tr>`;
+
+      const bodyRows = enrolled.map(r => {
+        const monthlyCells = months.map(m => {
+          const mm = r.record.byMonth.find(x => x.month === m);
+          if (!mm || mm.total === 0)
+            return `<td class="hm-cell hm-cell-empty" title="No lectures held">—</td>`;
+          return dataCell(mm.pct, mm.present, mm.total);
+        }).join('');
+        const overallCls = classify(r.record.pct);
+        return `<tr>
+          <th class="hm-row-label">
+            <div class="hm-subject">
+              <span class="hm-dot" style="background:${r.config.color};"></span>
+              ${escapeHtml(r.config.short)}
+            </div>
+          </th>
+          ${monthlyCells}
+          <td class="hm-cell hm-cell-${overallCls} hm-total-cell"
+              title="Overall · ${r.record.pct.toFixed(1)}%">
+            <div class="hm-pct">${r.record.pct.toFixed(0)}%</div>
+            <div class="hm-frac">${r.record.present}/${r.record.total}</div>
+          </td>
+        </tr>`;
+      }).join('');
+
+      // Month-average row across enrolled subjects
+      const avgRow = (() => {
+        const avgCells = months.map(m => {
+          const vals = enrolled.map(r => {
+            const mm = r.record.byMonth.find(x => x.month === m);
+            return (mm && mm.total > 0) ? mm.pct : null;
+          }).filter(v => v !== null);
+          if (!vals.length) return `<td class="hm-cell hm-cell-empty">—</td>`;
+          const avg = vals.reduce((a, v) => a + v, 0) / vals.length;
+          const cls = classify(avg);
+          return `<td class="hm-cell hm-cell-${cls}" title="Class avg · ${avg.toFixed(1)}%">
+            <div class="hm-pct">${avg.toFixed(0)}%</div>
+            <div class="hm-frac">avg</div>
+          </td>`;
+        }).join('');
+        const allAvgs = enrolled.map(r => r.record.pct);
+        const overall = allAvgs.reduce((a, v) => a + v, 0) / allAvgs.length;
+        const oCls = classify(overall);
+        return `<tr style="border-top:2px solid var(--border);">
+          <th class="hm-row-label">
+            <div class="hm-subject" style="color:var(--fg-mute);font-style:italic;">
+              <span class="hm-dot" style="background:var(--border-2);"></span>avg
+            </div>
+          </th>
+          ${avgCells}
+          <td class="hm-cell hm-cell-${oCls} hm-total-cell" title="Overall avg · ${overall.toFixed(1)}%">
+            <div class="hm-pct">${overall.toFixed(0)}%</div>
+            <div class="hm-frac">avg</div>
+          </td>
+        </tr>`;
+      })();
+
+      return `<div class="hm-wrap">
+        <table class="hm-table">
+          <thead>${header}</thead>
+          <tbody>${bodyRows}${avgRow}</tbody>
+        </table>
+        <div class="hm-legend">
+          <span class="hm-legend-item hm-cell-good">≥85% on track</span>
+          <span class="hm-legend-item hm-cell-warn">${THRESHOLD}–84% watch list</span>
+          <span class="hm-legend-item hm-cell-bad">&lt;${THRESHOLD}% below threshold</span>
+        </div>
+      </div>`;
+    }
+
     // ───────── class ranking ─────────
     function computeOverallRanks(subjects, subjectStates) {
       const byRoll = new Map();
@@ -1836,6 +2084,7 @@
       render();
     };
     window.refreshAll = function () { for (const s of SUBJECTS) fetchSubject(s.id); };
+    window.setChartView = function (v) { STATE.chartView = v; render(); };
     window.fetchSubject = fetchSubject;
 
     // Boot: render from cache immediately, then refresh stale subjects in background
