@@ -1162,6 +1162,58 @@
       border-radius: 5px;
     }
 
+    /* ───── responsive dashboard grid ───── */
+    @media (min-width: 768px) {
+      .wrap.is-dashboard {
+        max-width: 1400px;
+        padding: 24px 36px 64px;
+      }
+    }
+
+    /* Named-area grid — single column on mobile, 2-col on desktop.
+       Grid-template-areas controls visual order independently of DOM order. */
+    .dash-layout {
+      display: grid;
+      gap: 14px;
+      grid-template-areas:
+        "hero"
+        "msg"
+        "subjects"
+        "trend"
+        "matrix"
+        "class-comp"
+        "alert";
+    }
+
+    /* Strip individual bottom-margins — gap handles spacing inside the grid */
+    .dash-layout .card,
+    .dash-layout .hero,
+    .dash-layout .msg {
+      margin-bottom: 0;
+    }
+
+    .dash-hero      { grid-area: hero; }
+    .dash-msg       { grid-area: msg; }
+    .dash-subjects  { grid-area: subjects; }
+    .dash-class     { grid-area: class-comp; }
+    .dash-alert     { grid-area: alert; }
+    .dash-trend     { grid-area: trend; }
+    .dash-matrix    { grid-area: matrix; }
+
+    @media (min-width: 768px) {
+      .dash-layout {
+        grid-template-columns: minmax(260px, 380px) 1fr;
+        grid-template-areas:
+          "hero       subjects"
+          "msg        subjects"
+          "class-comp subjects"
+          "alert      subjects"
+          "trend      trend"
+          "matrix     matrix";
+        align-items: start;
+      }
+    }
+
     /* ───── view toggle (matrix / bars) ───── */
     .view-toggle {
       display: flex;
@@ -1599,9 +1651,12 @@
     // ───────── render ─────────
     function render() {
       const main = document.getElementById('main');
+      const wrap = document.querySelector('.wrap');
       if (STATE.view === 'dashboard' && STATE.studentRoll) {
+        if (wrap) wrap.classList.add('is-dashboard');
         main.innerHTML = renderDashboard(STATE.studentRoll);
       } else {
+        if (wrap) wrap.classList.remove('is-dashboard');
         main.innerHTML = renderLogin();
         wireLogin();
       }
@@ -1783,99 +1838,114 @@
       return `
     ${topRowHtml(latestFetch)}
 
-    <div class="hero is-${cls}">
-      <div class="hero-name">${escapeHtml(name)}</div>
-      <div class="hero-roll">${escapeHtml(roll)} · Across ${enrolledCount} subject${enrolledCount === 1 ? '' : 's'}</div>
-      <div class="hero-pct">
-        <span class="hero-pct-v">${combined.pct.toFixed(1)}<small>%</small></span>
-        <span class="hero-badge is-${cls}">${statusLabel(cls)}</span>
-      </div>
-      <div class="hero-frac"><b>${combined.present}</b> attended of <b>${combined.total}</b> total lectures</div>
-      <div class="hero-bar">
-        <div class="hero-bar-track">
-          <div class="hero-bar-fill" style="width:${Math.min(100, combined.pct)}%;"></div>
-          <div class="hero-bar-threshold" style="left:${THRESHOLD}%;"></div>
-        </div>
-        <div class="hero-bar-bottom">
-          <span>0%</span><span>${THRESHOLD}% threshold</span><span>100%</span>
-        </div>
-      </div>
-    </div>
+    <div class="dash-layout">
 
-    <div class="msg is-${msg.cls}">${msg.html}</div>
-
-    <div class="card">
-      <div class="card-head">
-        <h3 class="card-title">Per subject</h3>
-        <span class="card-sub">${enrolledCount} enrolled</span>
-      </div>
-      <div class="subjects">
-        ${across.map(r => renderSubjRow(r)).join('')}
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-head">
-        <h3 class="card-title">Trend over months</h3>
-        <span class="card-sub">Per-subject % by month</span>
-      </div>
-      <div class="chart-wrap">${renderTrend(across)}</div>
-      <div class="chart-legend">
-        ${SUBJECTS.map(s =>
-        `<span class="chart-legend-item">
-            <span class="chart-legend-dot" style="background:${s.color};"></span>${escapeHtml(s.short)}
-          </span>`).join('')}
-        <span class="chart-legend-item">
-          <span class="chart-legend-thr"></span>${THRESHOLD}% threshold
-        </span>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-head">
-        <h3 class="card-title">Monthly comparison</h3>
-        <div class="view-toggle">
-          <button class="vt-btn ${STATE.chartView === 'matrix' ? 'is-active' : ''}"
-            onclick="setChartView('matrix')">Matrix</button>
-          <button class="vt-btn ${STATE.chartView === 'bars' ? 'is-active' : ''}"
-            onclick="setChartView('bars')">Bars</button>
+      <div class="dash-hero">
+        <div class="hero is-${cls}">
+          <div class="hero-name">${escapeHtml(name)}</div>
+          <div class="hero-roll">${escapeHtml(roll)} · Across ${enrolledCount} subject${enrolledCount === 1 ? '' : 's'}</div>
+          <div class="hero-pct">
+            <span class="hero-pct-v">${combined.pct.toFixed(1)}<small>%</small></span>
+            <span class="hero-badge is-${cls}">${statusLabel(cls)}</span>
+          </div>
+          <div class="hero-frac"><b>${combined.present}</b> attended of <b>${combined.total}</b> total lectures</div>
+          <div class="hero-bar">
+            <div class="hero-bar-track">
+              <div class="hero-bar-fill" style="width:${Math.min(100, combined.pct)}%;"></div>
+              <div class="hero-bar-threshold" style="left:${THRESHOLD}%;"></div>
+            </div>
+            <div class="hero-bar-bottom">
+              <span>0%</span><span>${THRESHOLD}% threshold</span><span>100%</span>
+            </div>
+          </div>
         </div>
       </div>
-      ${STATE.chartView === 'matrix' ? renderHeatMatrix(across) : renderMonthlyBars(across)}
-    </div>
 
-    <div class="card">
-      <div class="card-head"><h3 class="card-title">Compared to your class</h3></div>
-      <div class="stat-row">
-        <span class="stat-row-l">Your combined attendance</span>
-        <span class="stat-row-v" style="color:var(--${cls});">${combined.pct.toFixed(1)}%</span>
+      <div class="dash-msg">
+        <div class="msg is-${msg.cls}">${msg.html}</div>
       </div>
-      <div class="stat-row">
-        <span class="stat-row-l">Class combined average</span>
-        <span class="stat-row-v">${classAvgCombined.toFixed(1)}%</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-row-l">Difference</span>
-        <span class="stat-row-v" style="color:${combined.pct >= classAvgCombined ? 'var(--good)' : 'var(--bad)'};">
-          ${combined.pct >= classAvgCombined ? '+' : ''}${(combined.pct - classAvgCombined).toFixed(1)} pts
-        </span>
-      </div>
-      ${classRank ? `<div class="stat-row">
-        <span class="stat-row-l">Combined rank</span>
-        <span class="stat-row-v">#${classRank} <small>of ${classTotal}</small></span>
-      </div>` : ''}
-      ${across.filter(r => r.record && r.record.marks !== null).map(r => `
-        <div class="stat-row">
-          <span class="stat-row-l">${escapeHtml(r.config.short)} · attendance marks</span>
-          <span class="stat-row-v">${r.record.marks}<small>/ 10</small></span>
-        </div>`).join('')}
-    </div>
 
-    ${lowSubjects.length ? `
-      <div class="msg is-bad">
-        <b>⚠ Below threshold in ${lowSubjects.length} subject${lowSubjects.length === 1 ? '' : 's'}:</b>
-        ${lowSubjects.map(r => `<b>${escapeHtml(r.config.short)}</b> (${r.record.pct.toFixed(0)}%)`).join(', ')}.
-      </div>` : ''}
+      <div class="dash-subjects">
+        <div class="card">
+          <div class="card-head">
+            <h3 class="card-title">Per subject</h3>
+            <span class="card-sub">${enrolledCount} enrolled</span>
+          </div>
+          <div class="subjects">
+            ${across.map(r => renderSubjRow(r)).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-class">
+        <div class="card">
+          <div class="card-head"><h3 class="card-title">Compared to your class</h3></div>
+          <div class="stat-row">
+            <span class="stat-row-l">Your combined attendance</span>
+            <span class="stat-row-v" style="color:var(--${cls});">${combined.pct.toFixed(1)}%</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-row-l">Class combined average</span>
+            <span class="stat-row-v">${classAvgCombined.toFixed(1)}%</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-row-l">Difference</span>
+            <span class="stat-row-v" style="color:${combined.pct >= classAvgCombined ? 'var(--good)' : 'var(--bad)'};">
+              ${combined.pct >= classAvgCombined ? '+' : ''}${(combined.pct - classAvgCombined).toFixed(1)} pts
+            </span>
+          </div>
+          ${classRank ? `<div class="stat-row">
+            <span class="stat-row-l">Combined rank</span>
+            <span class="stat-row-v">#${classRank} <small>of ${classTotal}</small></span>
+          </div>` : ''}
+          ${across.filter(r => r.record && r.record.marks !== null).map(r => `
+            <div class="stat-row">
+              <span class="stat-row-l">${escapeHtml(r.config.short)} · attendance marks</span>
+              <span class="stat-row-v">${r.record.marks}<small>/ 10</small></span>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="dash-alert">${lowSubjects.length ? `<div class="msg is-bad">
+          <b>⚠ Below threshold in ${lowSubjects.length} subject${lowSubjects.length === 1 ? '' : 's'}:</b>
+          ${lowSubjects.map(r => `<b>${escapeHtml(r.config.short)}</b> (${r.record.pct.toFixed(0)}%)`).join(', ')}.
+        </div>` : ''}</div>
+
+      <div class="dash-trend">
+        <div class="card">
+          <div class="card-head">
+            <h3 class="card-title">Trend over months</h3>
+            <span class="card-sub">Per-subject % by month</span>
+          </div>
+          <div class="chart-wrap">${renderTrend(across)}</div>
+          <div class="chart-legend">
+            ${SUBJECTS.map(s =>
+            `<span class="chart-legend-item">
+                <span class="chart-legend-dot" style="background:${s.color};"></span>${escapeHtml(s.short)}
+              </span>`).join('')}
+            <span class="chart-legend-item">
+              <span class="chart-legend-thr"></span>${THRESHOLD}% threshold
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-matrix">
+        <div class="card">
+          <div class="card-head">
+            <h3 class="card-title">Monthly comparison</h3>
+            <div class="view-toggle">
+              <button class="vt-btn ${STATE.chartView === 'matrix' ? 'is-active' : ''}"
+                onclick="setChartView('matrix')">Matrix</button>
+              <button class="vt-btn ${STATE.chartView === 'bars' ? 'is-active' : ''}"
+                onclick="setChartView('bars')">Bars</button>
+            </div>
+          </div>
+          ${STATE.chartView === 'matrix' ? renderHeatMatrix(across) : renderMonthlyBars(across)}
+        </div>
+      </div>
+
+    </div>
   `;
     }
 
