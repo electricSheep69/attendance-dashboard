@@ -1,0 +1,23 @@
+{
+  "name": "primary",
+  "version": "1.0.0",
+  "description": "Attendance Dashboard with Vercel Web Analytics",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/electricSheep69/attendance-dashboard.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/electricSheep69/attendance-dashboard/issues"
+  },
+  "homepage": "https://github.com/electricSheep69/attendance-dashboard#readme",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
+}
