@@ -7,6 +7,7 @@
   <title>Attendance · DSE</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://docs.google.com" />
   <link rel="preload" as="style"
     href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
     onload="this.rel='stylesheet'" />
@@ -211,7 +212,7 @@
 
     .pill.is-loading {
       background: var(--warn-soft);
-      color: var(--warn);
+      color: var(--msg-warn-text);
     }
 
     .pill.is-loading>i {
@@ -221,7 +222,7 @@
 
     .pill.is-ok {
       background: var(--good-soft);
-      color: var(--good);
+      color: var(--msg-good-text);
     }
 
     .pill.is-ok>i {
@@ -230,7 +231,7 @@
 
     .pill.is-err {
       background: var(--bad-soft);
-      color: var(--bad);
+      color: var(--msg-bad-text);
     }
 
     .pill.is-err>i {
@@ -312,7 +313,7 @@
     }
 
     .subj-chip-code {
-      color: var(--fg-dim);
+      color: var(--fg-mute);
       font-family: var(--mono);
       font-size: 10.5px;
       letter-spacing: .04em;
@@ -330,7 +331,7 @@
       font-size: 11px;
       letter-spacing: .12em;
       font-weight: 600;
-      color: var(--fg-dim);
+      color: var(--fg-mute);
       text-transform: uppercase;
       margin-bottom: 8px;
       display: block;
@@ -445,7 +446,7 @@
 
     .login-hint {
       font-size: 12.5px;
-      color: var(--fg-dim);
+      color: var(--fg-mute);
       margin-top: 16px;
       text-align: center;
       line-height: 1.55;
@@ -1282,12 +1283,12 @@
 <body>
   <div class="wrap">
     <div class="brand">
-      <div class="brand-mark"><img src="assets/mba-ba-logo.png" alt="MBA-BA"/></div>
+      <div class="brand-mark"><img src="assets/mba-ba-logo.png" alt="MBA-BA" width="36" height="36"/></div>
       <div class="brand-name">Attendance Dashboard</div>
       <div class="brand-sub">DSE · MBA · Sem II</div>
       <button class="theme-btn" id="theme-toggle" onclick="toggleTheme()" title="Toggle light / dark mode" aria-label="Toggle theme">🌙</button>
     </div>
-    <div id="main"></div>
+    <main id="main"></main>
   </div>
 
   <script>
@@ -1745,8 +1746,10 @@
     function wireLogin() {
       const input = document.getElementById('roll-input');
       if (!input) return;
-      input.focus();
-      try { input.setSelectionRange(input.value.length, input.value.length); } catch (_) { }
+      requestAnimationFrame(() => {
+        input.focus();
+        try { input.setSelectionRange(input.value.length, input.value.length); } catch (_) { }
+      });
 
       input.addEventListener('input', e => {
         STATE.query = e.target.value;
