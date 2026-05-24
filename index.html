@@ -1425,13 +1425,16 @@
         }];
       })),
       view: 'login',
-      studentRoll: localStorage.getItem(LS_LAST_ROLL) || null,
+      studentRoll: new URLSearchParams(location.search).get('roll') || localStorage.getItem(LS_LAST_ROLL) || null,
       query: '',
       activeSuggest: -1,
       error_login: null,
       chartView: 'matrix',
     };
-    if (STATE.studentRoll) STATE.view = 'dashboard';
+    if (STATE.studentRoll) {
+      STATE.view = 'dashboard';
+      try { localStorage.setItem(LS_LAST_ROLL, STATE.studentRoll); } catch {}
+    }
 
     function cellVal(c) { return c ? c.v : null; }
 
@@ -1860,6 +1863,7 @@
       STATE.error_login = null;
       STATE.activeSuggest = -1;
       try { localStorage.setItem(LS_LAST_ROLL, roll); } catch { }
+      history.pushState({ roll }, '', '?roll=' + encodeURIComponent(roll));
       window.scrollTo({ top: 0, behavior: 'instant' });
       render();
     }
@@ -2208,8 +2212,26 @@
       STATE.studentRoll = null;
       STATE.query = '';
       try { localStorage.removeItem(LS_LAST_ROLL); } catch { }
+      history.pushState(null, '', location.pathname);
       render();
     };
+
+    window.addEventListener('popstate', () => {
+      const roll = new URLSearchParams(location.search).get('roll');
+      if (roll) {
+        STATE.studentRoll = roll;
+        STATE.view = 'dashboard';
+        STATE.error_login = null;
+        try { localStorage.setItem(LS_LAST_ROLL, roll); } catch {}
+      } else {
+        STATE.studentRoll = null;
+        STATE.view = 'login';
+        STATE.query = '';
+        try { localStorage.removeItem(LS_LAST_ROLL); } catch {}
+      }
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      render();
+    });
     window.refreshAll = function () { for (const s of SUBJECTS) fetchSubject(s.id); };
     window.setChartView = function (v) { STATE.chartView = v; render(); };
     window.fetchSubject = fetchSubject;
