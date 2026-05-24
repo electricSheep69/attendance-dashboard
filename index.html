@@ -119,6 +119,15 @@
       .wrap {
         padding: 18px 14px 56px;
       }
+
+      /* Brand bar: hide the sub-label so name + toggle have room to breathe */
+      .brand-sub {
+        display: none;
+      }
+
+      .brand-name {
+        flex: 1;
+      }
     }
 
     .brand {
@@ -1176,6 +1185,7 @@
     .dash-layout {
       display: grid;
       gap: 14px;
+      grid-template-columns: minmax(0, 1fr);
       grid-template-areas:
         "hero"
         "msg"
