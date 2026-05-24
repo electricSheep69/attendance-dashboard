@@ -7,9 +7,11 @@
   <title>Attendance · DSE</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
+  <link rel="preload" as="style"
     href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
-    rel="stylesheet" />
+    onload="this.rel='stylesheet'" />
+  <noscript><link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" /></noscript>
   <style>
     :root {
       --bg: #fafaf9;
@@ -1541,10 +1543,8 @@
       if (pct >= THRESHOLD) return 'warn';
       return 'bad';
     }
-    function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, c =>
-        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    }
+    const _ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+    function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => _ESC[c]); }
     function fmtAgo(t) {
       if (!t) return '—';
       const s = Math.round((Date.now() - t.getTime()) / 1000);
@@ -1675,7 +1675,12 @@
     }
 
     // ───────── render ─────────
+    let _raf = 0;
     function render() {
+      if (_raf) return;
+      _raf = requestAnimationFrame(() => { _raf = 0; _doRender(); });
+    }
+    function _doRender() {
       const main = document.getElementById('main');
       const wrap = document.querySelector('.wrap');
       if (STATE.view === 'dashboard' && STATE.studentRoll) {
@@ -1855,10 +1860,11 @@
         r.subj.fetchedAt && (!acc || r.subj.fetchedAt > acc) ? r.subj.fetchedAt : acc, null);
       const lowSubjects = across.filter(r => r.record && r.record.pct < THRESHOLD);
 
-      const sortedCombined = computeOverallRanks(SUBJECTS, STATE.subjects).find(x => x.roll === roll);
+      const _allRanks = computeOverallRanks(SUBJECTS, STATE.subjects);
+      const sortedCombined = _allRanks.find(x => x.roll === roll);
       const classRank = sortedCombined ? sortedCombined.rank : null;
       const classTotal = sortedCombined ? sortedCombined.total : null;
-      const classAvgCombined = computeClassAvgCombined(SUBJECTS, STATE.subjects);
+      const classAvgCombined = _allRanks.length ? _allRanks.reduce((a, r) => a + r.pct, 0) / _allRanks.length : 0;
       const enrolledCount = across.filter(r => r.record).length;
 
       return `
@@ -2184,8 +2190,8 @@
     window.setChartView = function (v) { STATE.chartView = v; render(); };
     window.fetchSubject = fetchSubject;
 
-    // Boot: render from cache immediately, then refresh stale subjects in background
-    render();
+    // Boot: render from cache immediately (synchronous), then refresh stale subjects in background
+    _doRender();
     for (const s of SUBJECTS) {
       const subj = STATE.subjects[s.id];
       const stale = subj.fetchedAt && (Date.now() - subj.fetchedAt.getTime() > CACHE_TTL_MS);
