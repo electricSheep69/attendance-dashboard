@@ -250,7 +250,6 @@
       }
     }
 
-    /* ───── login ───── */
     .login-eyebrow {
       font-size: 11px;
       letter-spacing: .14em;
@@ -460,7 +459,6 @@
       font-size: 11.5px;
     }
 
-    /* ───── dashboard ───── */
     .top-row {
       display: flex;
       justify-content: space-between;
@@ -639,9 +637,11 @@
     }
 
     .hero-bar-fill {
+      width: 100%;
       height: 100%;
       border-radius: 999px;
-      transition: width .8s cubic-bezier(.2, .7, .2, 1);
+      transform-origin: left;
+      transition: transform .8s cubic-bezier(.2, .7, .2, 1);
     }
 
     .is-good .hero-bar-fill {
@@ -744,9 +744,11 @@
     }
 
     .subj-row-bar-fill {
+      width: 100%;
       height: 100%;
       border-radius: 999px;
-      transition: width .6s cubic-bezier(.2, .7, .2, 1);
+      transform-origin: left;
+      transition: transform .6s cubic-bezier(.2, .7, .2, 1);
     }
 
     .subj-row-bar-fill.is-good {
@@ -925,8 +927,10 @@
     }
 
     .mb-bar-fill {
+      width: 100%;
       height: 100%;
       border-radius: 999px;
+      transform-origin: left;
     }
 
     .mb-bar-frac {
@@ -1049,7 +1053,6 @@
       margin: 0 0 14px;
     }
 
-    /* ───── heat matrix ───── */
     .hm-wrap {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
@@ -1190,7 +1193,6 @@
       .hm-pct { font-size: 11.5px; }
     }
 
-    /* ───── responsive dashboard grid ───── */
     @media (min-width: 768px) {
       .wrap.is-dashboard {
         max-width: 1400px;
@@ -1243,7 +1245,6 @@
       }
     }
 
-    /* ───── view toggle (matrix / bars) ───── */
     .view-toggle {
       display: flex;
       background: var(--surface-2);
@@ -1292,7 +1293,6 @@
   </div>
 
   <script>
-    // ───────── theme ─────────
     const LS_THEME = 'att.theme';
     function applyTheme(dark) {
       document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
@@ -1314,7 +1314,6 @@
     })();
     window.toggleTheme = toggleTheme;
 
-    // ───────── config ─────────
     // To add more subjects, append entries to this array.
     // Each entry needs: id (unique key), code, short (tab label), name, prof, sheetId, tab (sheet tab name), color.
     // The Google Sheet must be shared as "Anyone with the link → Viewer".
@@ -1399,7 +1398,6 @@
     const gvizUrl = (s) =>
       `https://docs.google.com/spreadsheets/d/${s.sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(s.tab)}`;
 
-    // ───────── caching (stale-while-revalidate) ─────────
     const CACHE_VERSION = 'v2';
     const CACHE_TTL_MS = 5 * 60 * 1000;
     const LS_LAST_ROLL = 'att.lastRoll';
@@ -1423,7 +1421,6 @@
       } catch { }
     }
 
-    // ───────── state ─────────
     let STATE = {
       subjects: Object.fromEntries(SUBJECTS.map(s => {
         const cached = loadCached(s.id);
@@ -1447,7 +1444,6 @@
     };
     if (STATE.studentRoll) STATE.view = 'dashboard';
 
-    // ───────── fetch + parse ─────────
     function cellVal(c) { return c ? c.v : null; }
 
     async function fetchSubject(id) {
@@ -1546,7 +1542,6 @@
       return { students, monthly, deliveredTotal, classAvg };
     }
 
-    // ───────── helpers ─────────
     function classify(pct) {
       if (pct >= 85) return 'good';
       if (pct >= THRESHOLD) return 'warn';
@@ -1630,7 +1625,6 @@
       return { cls: 'bad', html: `Combined attendance is <b>${pct.toFixed(1)}%</b> — <b>below</b> the ${THRESHOLD}% line. You'd need to attend the next <b>${Math.max(1, x)}</b> lectures in a row to clear it.` };
     }
 
-    // ───────── SVG trend chart ─────────
     function renderTrend(across) {
       const monthSet = new Set();
       for (const r of across) for (const m of (r.subj.monthly || [])) monthSet.add(m.month);
@@ -1686,7 +1680,6 @@
   </svg>`;
     }
 
-    // ───────── render ─────────
     let _raf = 0;
     function render() {
       if (_raf) return;
@@ -1747,7 +1740,7 @@
       const input = document.getElementById('roll-input');
       if (!input) return;
       requestAnimationFrame(() => {
-        input.focus();
+        input.focus({ preventScroll: true });
         try { input.setSelectionRange(input.value.length, input.value.length); } catch (_) { }
       });
 
@@ -1927,7 +1920,7 @@
           <div class="hero-frac"><b>${combined.present}</b> attended of <b>${combined.total}</b> total lectures</div>
           <div class="hero-bar">
             <div class="hero-bar-track">
-              <div class="hero-bar-fill" style="width:${Math.min(100, combined.pct)}%;"></div>
+              <div class="hero-bar-fill" style="transform:scaleX(${Math.min(1, combined.pct/100)});"></div>
               <div class="hero-bar-threshold" style="left:${THRESHOLD}%;"></div>
             </div>
             <div class="hero-bar-bottom">
@@ -2078,7 +2071,7 @@
       <div class="subj-row-frac">${rec.present}/${rec.total}</div>
     </div>
     <div class="subj-row-bar">
-      <div class="subj-row-bar-fill is-${cls}" style="width:${Math.min(100, rec.pct)}%;"></div>
+      <div class="subj-row-bar-fill is-${cls}" style="transform:scaleX(${Math.min(1, rec.pct/100)});"></div>
       <div class="subj-row-bar-thr" style="left:${THRESHOLD}%;"></div>
     </div>
   </div>`;
@@ -2101,7 +2094,7 @@
         const cls = classify(mm.pct);
         return `<div class="mb-bar">
             <div class="mb-bar-track">
-              <div class="mb-bar-fill" style="width:${Math.min(100, mm.pct)}%;background:${r.config.color};"></div>
+              <div class="mb-bar-fill" style="transform:scaleX(${Math.min(1, mm.pct/100)});background:${r.config.color};"></div>
             </div>
             <div class="mb-bar-frac">${mm.present}/${mm.total}</div>
             <div class="mb-bar-pct is-${cls}">${mm.pct.toFixed(0)}%</div>
@@ -2201,7 +2194,6 @@
       </div>`;
     }
 
-    // ───────── class ranking ─────────
     function computeOverallRanks(subjects, subjectStates) {
       const byRoll = new Map();
       for (const cfg of subjects) {
@@ -2222,7 +2214,6 @@
       return ranks.reduce((a, r) => a + r.pct, 0) / ranks.length;
     }
 
-    // ───────── global handlers (called from inline onclick) ─────────
     window.goLogin = function () {
       STATE.view = 'login';
       STATE.studentRoll = null;
