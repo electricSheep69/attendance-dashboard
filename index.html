@@ -1268,6 +1268,14 @@
       color: var(--fg);
       box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
     }
+
+    /* trend chart hover-highlight */
+    .chart-svg g[data-series] { transition: opacity .15s; }
+    .chart-svg.has-focus g[data-series] { opacity: .08; }
+    .chart-svg.has-focus g[data-series].is-focus { opacity: 1; }
+    .chart-legend-item { transition: opacity .15s; cursor: default; }
+    .chart-legend.has-focus .chart-legend-item { opacity: .25; }
+    .chart-legend.has-focus .chart-legend-item.is-focus { opacity: 1; }
   </style>
 </head>
 
@@ -1645,10 +1653,13 @@
         if (!valid.length) return '';
         const d = valid.map((p, idx) => (idx === 0 ? 'M' : 'L') + cx(p.i) + ',' + cy(p.pct)).join(' ');
         const dots = valid.map(p =>
-          `<circle cx="${cx(p.i)}" cy="${cy(p.pct)}" r="4" fill="${r.config.color}" stroke="var(--surface)" stroke-width="2">` +
+          `<circle cx="${cx(p.i)}" cy="${cy(p.pct)}" r="4" fill="${r.config.color}" stroke="var(--surface)" stroke-width="2.5">` +
           `<title>${r.config.short} · ${p.m} · ${p.pct.toFixed(0)}% (${p.present}/${p.total})</title></circle>`
         ).join('');
-        return `<path d="${d}" fill="none" stroke="${r.config.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${dots}`;
+        return `<g data-series="${r.config.id}">` +
+          `<path d="${d}" fill="none" stroke="var(--surface)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>` +
+          `<path d="${d}" fill="none" stroke="${r.config.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>` +
+          `${dots}</g>`;
       }).join('');
 
       const yTicks = [0, 25, 50, 75, 100];
@@ -1686,6 +1697,7 @@
       if (STATE.view === 'dashboard' && STATE.studentRoll) {
         if (wrap) wrap.classList.add('is-dashboard');
         main.innerHTML = renderDashboard(STATE.studentRoll);
+        wireChart();
       } else {
         if (wrap) wrap.classList.remove('is-dashboard');
         main.innerHTML = renderLogin();
@@ -1811,6 +1823,35 @@
           card.appendChild(e);
         }
       }
+    }
+
+    function wireChart() {
+      const svg = document.querySelector('.chart-svg');
+      const legend = document.querySelector('.chart-legend');
+      if (!svg || !legend) return;
+      function focus(id) {
+        svg.classList.add('has-focus');
+        legend.classList.add('has-focus');
+        svg.querySelectorAll('g[data-series]').forEach(g =>
+          g.classList.toggle('is-focus', g.dataset.series === id));
+        legend.querySelectorAll('[data-series]').forEach(el =>
+          el.classList.toggle('is-focus', el.dataset.series === id));
+      }
+      function blur() {
+        svg.classList.remove('has-focus');
+        legend.classList.remove('has-focus');
+        svg.querySelectorAll('g[data-series]').forEach(g => g.classList.remove('is-focus'));
+        legend.querySelectorAll('[data-series]').forEach(el => el.classList.remove('is-focus'));
+      }
+      svg.querySelectorAll('g[data-series]').forEach(g => {
+        g.style.cursor = 'pointer';
+        g.addEventListener('mouseenter', () => focus(g.dataset.series));
+        g.addEventListener('mouseleave', blur);
+      });
+      legend.querySelectorAll('[data-series]').forEach(el => {
+        el.addEventListener('mouseenter', () => focus(el.dataset.series));
+        el.addEventListener('mouseleave', blur);
+      });
     }
 
     function attemptLookup() {
@@ -1952,7 +1993,7 @@
           <div class="chart-wrap">${renderTrend(across)}</div>
           <div class="chart-legend">
             ${SUBJECTS.map(s =>
-            `<span class="chart-legend-item">
+            `<span class="chart-legend-item" data-series="${s.id}">
                 <span class="chart-legend-dot" style="background:${s.color};"></span>${escapeHtml(s.short)}
               </span>`).join('')}
             <span class="chart-legend-item">
