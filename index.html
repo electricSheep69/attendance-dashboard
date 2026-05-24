@@ -7,12 +7,12 @@
   <title>Attendance · DSE</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preconnect" href="https://docs.google.com" />
+  <link rel="preconnect" href="https://docs.google.com" crossorigin />
   <link rel="preload" as="style"
-    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=optional"
     onload="this.rel='stylesheet'" />
   <noscript><link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" /></noscript>
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=optional" /></noscript>
   <style>
     :root {
       --bg: #fafaf9;
@@ -31,18 +31,18 @@
       --warn-soft: #fef3c7;
       --bad: #dc2626;
       --bad-soft: #fee2e2;
-      --series-1: #4f46e5;
-      --series-2: #0891b2;
-      --series-3: #db2777;
-      --series-4: #ca8a04;
-      --series-5: #16a34a;
-      --series-6: #ea580c;
-      --series-7: #7c3aed;
-      --series-8: #0d9488;
+      /* oklch(L C H) — equal L = equal brightness; C maximised per hue */
+      --series-1: oklch(0.62 0.26 25);
+      --series-2: oklch(0.68 0.21 55);
+      --series-3: oklch(0.72 0.17 108);
+      --series-4: oklch(0.62 0.24 150);
+      --series-5: oklch(0.64 0.18 200);
+      --series-6: oklch(0.55 0.25 260);
+      --series-7: oklch(0.62 0.27 302);
+      --series-8: oklch(0.62 0.27 340);
       --sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
       --mono: 'IBM Plex Mono', ui-monospace, monospace;
       --radius: 12px;
-      /* message text colours (light) */
       --msg-good-text: #14532d;
       --msg-warn-text: #78350f;
       --msg-bad-text:  #7f1d1d;
@@ -68,15 +68,14 @@
       --msg-good-text: #bbf7d0;
       --msg-warn-text: #fde68a;
       --msg-bad-text:  #fecaca;
-      /* series colours are brighter in dark mode for legibility */
-      --series-1: #818cf8;
-      --series-2: #22d3ee;
-      --series-3: #f472b6;
-      --series-4: #fbbf24;
-      --series-5: #4ade80;
-      --series-6: #fb923c;
-      --series-7: #a78bfa;
-      --series-8: #2dd4bf;
+      --series-1: oklch(0.75 0.22 25);
+      --series-2: oklch(0.78 0.18 55);
+      --series-3: oklch(0.82 0.15 108);
+      --series-4: oklch(0.76 0.20 150);
+      --series-5: oklch(0.78 0.16 200);
+      --series-6: oklch(0.72 0.21 260);
+      --series-7: oklch(0.75 0.23 302);
+      --series-8: oklch(0.75 0.23 340);
     }
 
     * {
@@ -184,7 +183,6 @@
       display: grid;
       place-items: center;
       font-size: 15px;
-      transition: background .15s, border-color .15s;
       flex-shrink: 0;
       line-height: 1;
     }
@@ -217,6 +215,7 @@
 
     .pill.is-loading>i {
       background: var(--warn);
+      will-change: opacity;
       animation: pulse 1.2s ease-in-out infinite;
     }
 
@@ -248,15 +247,6 @@
       50% {
         opacity: .35;
       }
-    }
-
-    .login-eyebrow {
-      font-size: 11px;
-      letter-spacing: .14em;
-      font-weight: 600;
-      color: var(--fg-dim);
-      text-transform: uppercase;
-      margin-bottom: 8px;
     }
 
     .login-title {
@@ -352,7 +342,6 @@
       font-family: var(--mono);
       outline: none;
       min-width: 0;
-      transition: border-color .12s;
       appearance: none;
       -webkit-appearance: none;
     }
@@ -371,7 +360,6 @@
       font-size: 14px;
       font-weight: 500;
       min-height: 48px;
-      transition: background .15s;
     }
 
     .lookup-btn:hover {
@@ -641,6 +629,7 @@
       height: 100%;
       border-radius: 999px;
       transform-origin: left;
+      will-change: transform;
       transition: transform .8s cubic-bezier(.2, .7, .2, 1);
     }
 
@@ -748,6 +737,7 @@
       height: 100%;
       border-radius: 999px;
       transform-origin: left;
+      will-change: transform;
       transition: transform .6s cubic-bezier(.2, .7, .2, 1);
     }
 
@@ -1262,7 +1252,6 @@
       font-size: 11.5px;
       font-weight: 500;
       color: var(--fg-mute);
-      transition: background .12s, color .12s;
     }
 
     .vt-btn.is-active {
@@ -1284,7 +1273,7 @@
 <body>
   <div class="wrap">
     <div class="brand">
-      <div class="brand-mark"><img src="assets/mba-ba-logo.png" alt="MBA-BA" width="36" height="36"/></div>
+      <div class="brand-mark"><img src="assets/mba-ba-logo.png" alt="MBA-BA" width="36" height="36" fetchpriority="high"/></div>
       <div class="brand-name">Attendance Dashboard</div>
       <div class="brand-sub">DSE · MBA · Sem II</div>
       <button class="theme-btn" id="theme-toggle" onclick="toggleTheme()" title="Toggle light / dark mode" aria-label="Toggle theme">🌙</button>
@@ -1474,6 +1463,7 @@
         subj.classAvg = parsed.classAvg;
         subj.fetchedAt = new Date();
         subj.loadStatus = 'ok';
+        invalidateCaches();
         saveCached(id, {
           students: parsed.students, monthly: parsed.monthly,
           deliveredTotal: parsed.deliveredTotal, classAvg: parsed.classAvg,
@@ -1561,15 +1551,19 @@
       return cls === 'good' ? 'On track' : cls === 'warn' ? 'Watch list' : 'Below threshold';
     }
 
-    // Merge both subjects' rosters; deduplicate by roll number
+    let _studentIndex = null;
+    let _ranksCache = null;
+    function invalidateCaches() { _studentIndex = null; _ranksCache = null; }
+
     function allStudentsIndex() {
+      if (_studentIndex) return _studentIndex;
       const map = new Map();
       for (const s of SUBJECTS) {
         for (const stu of STATE.subjects[s.id].students) {
           if (!map.has(stu.roll)) map.set(stu.roll, { roll: stu.roll, name: stu.name });
         }
       }
-      return [...map.values()];
+      return (_studentIndex = [...map.values()]);
     }
 
     function findStudent(q) {
@@ -1897,7 +1891,8 @@
         r.subj.fetchedAt && (!acc || r.subj.fetchedAt > acc) ? r.subj.fetchedAt : acc, null);
       const lowSubjects = across.filter(r => r.record && r.record.pct < THRESHOLD);
 
-      const _allRanks = computeOverallRanks(SUBJECTS, STATE.subjects);
+      if (!_ranksCache) _ranksCache = computeOverallRanks(SUBJECTS, STATE.subjects);
+      const _allRanks = _ranksCache;
       const sortedCombined = _allRanks.find(x => x.roll === roll);
       const classRank = sortedCombined ? sortedCombined.rank : null;
       const classTotal = sortedCombined ? sortedCombined.total : null;
@@ -2208,12 +2203,6 @@
       list.sort((a, b) => b.pct - a.pct || a.roll.localeCompare(b.roll));
       return list.map((x, i) => ({ ...x, rank: i + 1, total: list.length }));
     }
-    function computeClassAvgCombined(subjects, subjectStates) {
-      const ranks = computeOverallRanks(subjects, subjectStates);
-      if (!ranks.length) return 0;
-      return ranks.reduce((a, r) => a + r.pct, 0) / ranks.length;
-    }
-
     window.goLogin = function () {
       STATE.view = 'login';
       STATE.studentRoll = null;
