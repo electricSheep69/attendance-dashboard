@@ -1132,7 +1132,6 @@
         "msg"
         "subjects"
         "trend"
-        "matrix"
         "class-comp"
         "alert";
     }
@@ -1150,7 +1149,6 @@
     .dash-class     { grid-area: class-comp; }
     .dash-alert     { grid-area: alert; }
     .dash-trend     { grid-area: trend; }
-    .dash-matrix    { grid-area: matrix; }
 
     @media (min-width: 768px) {
       .dash-layout {
@@ -1160,12 +1158,34 @@
           "msg        subjects"
           "class-comp subjects"
           "alert      subjects"
-          "trend      trend"
-          "matrix     matrix";
+          "trend      trend";
         align-items: start;
       }
     }
 
+
+    .view-toggle {
+      display: flex;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 2px;
+      gap: 2px;
+    }
+    .vt-btn {
+      border: 0;
+      background: transparent;
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--fg-mute);
+    }
+    .vt-btn.is-active {
+      background: var(--surface);
+      color: var(--fg);
+      box-shadow: 0 1px 3px rgba(0,0,0,.12);
+    }
 
     /* trend chart hover-highlight */
     .chart-svg g[data-series] { transition: opacity .15s; }
@@ -1336,6 +1356,7 @@
       query: '',
       activeSuggest: -1,
       error_login: null,
+      chartView: 'trend',
     };
     if (STATE.studentRoll) {
       STATE.view = 'dashboard';
@@ -1888,28 +1909,26 @@
       <div class="dash-trend">
         <div class="card">
           <div class="card-head">
-            <h3 class="card-title">Trend over months</h3>
-            <span class="card-sub">Per-subject % by month</span>
+            <h3 class="card-title">Monthly view</h3>
+            <div class="view-toggle">
+              <button class="vt-btn ${STATE.chartView === 'trend' ? 'is-active' : ''}"
+                onclick="setChartView('trend')">Trend</button>
+              <button class="vt-btn ${STATE.chartView === 'matrix' ? 'is-active' : ''}"
+                onclick="setChartView('matrix')">Matrix</button>
+            </div>
           </div>
-          <div class="chart-wrap">${renderTrend(across)}</div>
-          <div class="chart-legend">
-            ${SUBJECTS.map(s =>
-            `<span class="chart-legend-item" data-series="${s.id}">
-                <span class="chart-legend-dot" style="background:${s.color};"></span>${escapeHtml(s.short)}
-              </span>`).join('')}
-            <span class="chart-legend-item">
-              <span class="chart-legend-thr"></span>${THRESHOLD}% threshold
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div class="dash-matrix">
-        <div class="card">
-          <div class="card-head">
-            <h3 class="card-title">Monthly comparison</h3>
-          </div>
-          ${renderHeatMatrix(across)}
+          ${STATE.chartView === 'trend' ? `
+            <div class="chart-wrap">${renderTrend(across)}</div>
+            <div class="chart-legend">
+              ${SUBJECTS.map(s =>
+                `<span class="chart-legend-item" data-series="${s.id}">
+                  <span class="chart-legend-dot" style="background:${s.color};"></span>${escapeHtml(s.short)}
+                </span>`).join('')}
+              <span class="chart-legend-item">
+                <span class="chart-legend-thr"></span>${THRESHOLD}% threshold
+              </span>
+            </div>
+          ` : renderHeatMatrix(across)}
         </div>
       </div>
 
@@ -2106,6 +2125,7 @@
       render();
     });
     window.refreshAll = function () { for (const s of SUBJECTS) fetchSubject(s.id); };
+    window.setChartView = function (v) { STATE.chartView = v; render(); };
 window.fetchSubject = fetchSubject;
 
     // Boot: render from cache immediately (synchronous), then refresh stale subjects in background
