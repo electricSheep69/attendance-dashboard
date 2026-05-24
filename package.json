@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "build": "mkdir -p dist && html-minifier-terser --collapse-whitespace --remove-comments --remove-optional-tags --minify-css true --minify-js true index.html -o dist/index.html && cp -r assets dist/"
+  },
+  "devDependencies": {
+    "html-minifier-terser": "^7.2.0"
+  }
+}
