@@ -1172,6 +1172,21 @@
       border-radius: 5px;
     }
 
+    /* Mobile matrix: drop "All" column + fraction text, tighten cells */
+    @media (max-width: 767px) {
+      .hm-th-total,
+      .hm-total-cell { display: none; }
+
+      .hm-frac { display: none; }
+
+      .hm-cell {
+        min-width: 36px;
+        padding: 7px 4px;
+      }
+
+      .hm-pct { font-size: 11.5px; }
+    }
+
     /* ───── responsive dashboard grid ───── */
     @media (min-width: 768px) {
       .wrap.is-dashboard {
