@@ -14,6 +14,8 @@
     onload="this.rel='stylesheet'" />
   <noscript><link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=optional" /></noscript>
+  <link rel="stylesheet" href="liquid-ether.css" />
+  <script defer src="liquid-ether.js"></script>
   <style>
     :root {
       --bg: #fafaf9;
@@ -116,6 +118,17 @@
       max-width: 760px;
       margin: 0 auto;
       padding: 24px 18px 64px;
+      position: relative;
+      z-index: 1;
+    }
+
+    #liquid-ether-root {
+      position: fixed;
+      inset: 0 0 auto;
+      height: min(600px, 75vh);
+      z-index: 0;
+      opacity: .42;
+      pointer-events: none;
     }
 
     @media (max-width: 480px) {
@@ -1198,6 +1211,7 @@
 </head>
 
 <body>
+  <div id="liquid-ether-root" aria-hidden="true"></div>
   <div class="wrap">
     <div class="brand">
       <div class="brand-mark"><img src="assets/mba-ba-logo.png" alt="MBA-BA" width="36" height="36" fetchpriority="high"/></div>
@@ -1612,6 +1626,7 @@
     function _doRender() {
       const main = document.getElementById('main');
       const wrap = document.querySelector('.wrap');
+      document.body.dataset.view = STATE.view;
       if (STATE.view === 'dashboard' && STATE.studentRoll) {
         if (wrap) wrap.classList.add('is-dashboard');
         main.innerHTML = renderDashboard(STATE.studentRoll);
@@ -1621,6 +1636,7 @@
         main.innerHTML = renderLogin();
         wireLogin();
       }
+      window.dispatchEvent(new Event('attendance:render'));
     }
 
     function renderLogin() {

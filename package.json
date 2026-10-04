@@ -1,8 +1,14 @@
 {
   "scripts": {
-    "build": "mkdir -p dist && html-minifier-terser --collapse-whitespace --remove-comments --remove-optional-tags --minify-css true --minify-js true index.html -o dist/index.html && cp -r assets dist/"
+    "build": "mkdir -p dist && esbuild src/liquid-ether-entry.jsx --bundle --minify --jsx=automatic --outfile=dist/liquid-ether.js && html-minifier-terser --collapse-whitespace --remove-comments --remove-optional-tags --minify-css true --minify-js true index.html -o dist/index.html && cp -r assets dist/"
   },
   "devDependencies": {
+    "esbuild": "^0.28.2",
     "html-minifier-terser": "^7.2.0"
+  },
+  "dependencies": {
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "three": "^0.186.1"
   }
 }
